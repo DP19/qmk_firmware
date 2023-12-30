@@ -40,7 +40,7 @@ enum {
     SIDE_OFF,
 };
 
-uint8_t side_mode           = 0;
+uint8_t side_mode           = SIDE_OFF;
 uint8_t side_light          = 3;
 uint8_t side_speed          = 2;
 uint8_t side_rgb            = 1;
@@ -745,7 +745,7 @@ void device_reset_show(void) {
  * @brief  device_reset_init.
  */
 void device_reset_init(void) {
-    side_mode       = 0;
+    side_mode       = SIDE_OFF;
     side_light      = 3;
     side_speed      = 2;
     side_rgb        = 1;
@@ -758,9 +758,9 @@ void device_reset_init(void) {
     f_bat_hold = false;
 
     rgb_matrix_enable();
-    rgb_matrix_mode(RGB_MATRIX_CYCLE_LEFT_RIGHT);
-    rgb_matrix_set_speed(255 - RGB_MATRIX_SPD_STEP * 2);
-    rgb_matrix_sethsv(255, 255, RGB_MATRIX_MAXIMUM_BRIGHTNESS - RGB_MATRIX_VAL_STEP * 2);
+    rgb_matrix_mode(RGB_MATRIX_DEFAULT_MODE);
+    rgb_matrix_set_speed(255);
+    rgb_matrix_sethsv(255, 255, RGB_MATRIX_MAXIMUM_BRIGHTNESS);
 
     user_config.default_brightness_flag = 0xA5;
     user_config.ee_side_mode            = side_mode;

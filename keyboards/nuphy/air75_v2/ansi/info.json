@@ -9,9 +9,9 @@
     },
     "features": {
         "bootmagic": true,
-        "mousekey": true,
+        "mousekey": false,
         "extrakey": true,
-        "console": true,
+        "console": false,
         "command": false,
         "nkro": true,
         "key_lock": true,
