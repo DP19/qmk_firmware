@@ -35,4 +35,5 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #define EECONFIG_KB_DATA_SIZE             8
 
-
+#define RGB_MATRIX_SOLID_REACTIVE_GRADIENT_MODE
+#define RGB_MATRIX_DEFAULT_MODE             RGB_MATRIX_SOLID_REACTIVE_SIMPLE
