@@ -1,3 +1,4 @@
+SRC += mcu_pwr.c
 SRC += side.c
 SRC += rf.c
 SRC += sleep.c
