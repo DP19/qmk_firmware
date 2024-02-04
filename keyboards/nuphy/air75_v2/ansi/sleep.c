@@ -29,22 +29,22 @@ extern uint16_t        no_act_time;
 extern bool            f_goto_sleep;
 extern bool            f_wakeup_prepare;
 
-uint8_t uart_send_cmd(uint8_t cmd, uint8_t ack_cnt, uint8_t delayms);
+extern uint8_t bitkb_report_buf[16];
+extern uint8_t bytekb_report_buf[8];
 
 void deep_sleep_handle(void) {
+    break_all_key(); // reset keys before sleeping for new QMK lifecycle to handle on wake.
+    memset(bitkb_report_buf, 0, sizeof(bitkb_report_buf));
+    memset(bytekb_report_buf, 0, sizeof(bytekb_report_buf));
+
+    // Sync again before sleeping
+    dev_sts_sync();
+
     enter_deep_sleep(); // puts the board in WFI mode and pauses the MCU
     exit_deep_sleep();  // This gets called when there is an interrupt (wake) event.
 
-    // Clear the keyboard for new QMK life cycle to handle.
-    clear_weak_mods();
-    clear_mods();
-    clear_keyboard();
-
     /* If RF is not connected anymore you would lose the first keystroke.
        This is expected behavior as the connection is not there.
-       Very quick taps on the first key (the one that wakes the board) has a
-       very high chance of getting stuck for some reason in the regular QMK lifecycle.
-       So... just press and release normally if you don't want problems. Or spam some keys.
     */
 }
 
