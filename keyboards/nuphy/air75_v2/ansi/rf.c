@@ -62,7 +62,7 @@ extern bool            f_dial_sw_init_ok;
 report_mouse_t mousekey_get_report(void);
 void           uart_init(uint32_t baud); // qmk uart.c
 void           uart_send_report(uint8_t report_type, uint8_t *report_buf, uint8_t report_size);
-void           UART_Send_Bytes(uint8_t *Buffer, uint32_t Length);
+void           uart_send_bytes(uint8_t *Buffer, uint32_t Length);
 uint8_t        get_checksum(uint8_t *buf, uint8_t len);
 void           uart_receive_pro(void);
 void           break_all_key(void);
@@ -228,7 +228,7 @@ void uart_send_report_nkro(report_nkro_t *report) {
 /**
  * @brief  Parsing the data received from the RF module.
  */
-void RF_Protocol_Receive(void) {
+void rf_protocol_receive(void) {
     uint8_t i, check_sum = 0;
 
     if (Usart_Mgr.RXDState == RX_Done) {
@@ -442,7 +442,7 @@ uint8_t uart_send_cmd(uint8_t cmd, uint8_t wait_ack, uint8_t delayms) {
     }
 
     f_uart_ack = 0;
-    UART_Send_Bytes(Usart_Mgr.TXDBuf, Usart_Mgr.TXDBuf[3] + 5);
+    uart_send_bytes(Usart_Mgr.TXDBuf, Usart_Mgr.TXDBuf[3] + 5);
 
     if (wait_ack) {
         while (wait_ack--) {
@@ -471,9 +471,9 @@ void dev_sts_sync(void) {
     if (f_rf_reset) {
         f_rf_reset = 0;
         wait_ms(100);
-        writePinLow(NRF_RESET_PIN);
+        gpio_write_pin_low(NRF_RESET_PIN);
         wait_ms(50);
-        writePinHigh(NRF_RESET_PIN);
+        gpio_write_pin_high(NRF_RESET_PIN);
         wait_ms(50);
     } else if (f_send_channel) {
         f_send_channel = 0;
@@ -529,14 +529,14 @@ void dev_sts_sync(void) {
  * @param Buffer data buf
  * @param Length data lenght
  */
-void UART_Send_Bytes(uint8_t *Buffer, uint32_t Length) {
-    writePinLow(NRF_WAKEUP_PIN);
+void uart_send_bytes(uint8_t *Buffer, uint32_t Length) {
+    gpio_write_pin_low(NRF_WAKEUP_PIN);
     wait_us(50);
 
     uart_transmit(Buffer, Length);
 
     wait_us(50 + Length * 30);
-    writePinHigh(NRF_WAKEUP_PIN);
+    gpio_write_pin_high(NRF_WAKEUP_PIN);
 }
 
 /**
@@ -575,7 +575,7 @@ void uart_send_report(uint8_t report_type, uint8_t *report_buf, uint8_t report_s
     memcpy(&Usart_Mgr.TXDBuf[4], report_buf, report_size);
     Usart_Mgr.TXDBuf[4 + report_size] = get_checksum(&Usart_Mgr.TXDBuf[4], report_size);
 
-    UART_Send_Bytes(&Usart_Mgr.TXDBuf[0], report_size + 5);
+    uart_send_bytes(&Usart_Mgr.TXDBuf[0], report_size + 5);
 }
 
 /**
@@ -607,7 +607,7 @@ void uart_receive_pro(void) {
     if (rcv_start) {
         rcv_start          = false;
         Usart_Mgr.RXDState = RX_Done;
-        RF_Protocol_Receive();
+        rf_protocol_receive();
         Usart_Mgr.RXDLen = 0;
     }
 }

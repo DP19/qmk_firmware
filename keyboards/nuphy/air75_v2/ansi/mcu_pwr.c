@@ -19,9 +19,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "mcu_stm32f0xx.h"
 #include "mcu_pwr.h"
 
+static const pin_t row_pins[MATRIX_ROWS] = MATRIX_ROW_PINS;
+static const pin_t col_pins[MATRIX_COLS] = MATRIX_COL_PINS;
+
 extern DEV_INFO_STRUCT dev_info;
 
 bool f_usb_deinit = 0;
+static bool tim6_enabled         = false;
 
 /** ================================================================
  * @brief   UART_GPIO Toggle rate configuration low speed + pull-up
@@ -106,50 +110,17 @@ void enter_deep_sleep(void) {
     }
 
     // off timer
-    TIM_Cmd(TIM6, DISABLE);
+    if (tim6_enabled) TIM_Cmd(TIM6, DISABLE);
 
     //------------------------ Configure key to wake up
-    setPinOutput(KCOL_0);
-    writePinHigh(KCOL_0);
-    setPinOutput(KCOL_1);
-    writePinHigh(KCOL_1);
-    setPinOutput(KCOL_2);
-    writePinHigh(KCOL_2);
-    setPinOutput(KCOL_3);
-    writePinHigh(KCOL_3);
-    setPinOutput(KCOL_4);
-    writePinHigh(KCOL_4);
-    setPinOutput(KCOL_5);
-    writePinHigh(KCOL_5);
-    setPinOutput(KCOL_6);
-    writePinHigh(KCOL_6);
-    setPinOutput(KCOL_7);
-    writePinHigh(KCOL_7);
-    setPinOutput(KCOL_8);
-    writePinHigh(KCOL_8);
-    setPinOutput(KCOL_9);
-    writePinHigh(KCOL_9);
-    setPinOutput(KCOL_10);
-    writePinHigh(KCOL_10);
-    setPinOutput(KCOL_11);
-    writePinHigh(KCOL_11);
-    setPinOutput(KCOL_12);
-    writePinHigh(KCOL_12);
-    setPinOutput(KCOL_13);
-    writePinHigh(KCOL_13);
-    setPinOutput(KCOL_14);
-    writePinHigh(KCOL_14);
-    setPinOutput(KCOL_15);
-    writePinHigh(KCOL_15);
-    setPinOutput(KCOL_16);
-    writePinHigh(KCOL_16);
+    for (int i = 0; i < ARRAY_SIZE(col_pins); i++) {
+        gpio_set_pin_output(col_pins[i]);
+        gpio_write_pin_high(col_pins[i]);
+    }
 
-    setPinInputLow(KROW_0);
-    setPinInputLow(KROW_1);
-    setPinInputLow(KROW_2);
-    setPinInputLow(KROW_3);
-    setPinInputLow(KROW_4);
-    setPinInputLow(KROW_5);
+    for (int i = 0; i < ARRAY_SIZE(row_pins); i++) {
+        gpio_set_pin_input_low(row_pins[i]);
+    }
 
     SYSCFG_EXTILineConfig(EXTI_PORT_R0, EXTI_PIN_R0);
     SYSCFG_EXTILineConfig(EXTI_PORT_R1, EXTI_PIN_R1);
@@ -177,28 +148,28 @@ void enter_deep_sleep(void) {
     NVIC_Init(&NVIC_InitStructure);
 
     // power off leds
-    setPinOutput(DC_BOOST_PIN);
-    writePinLow(DC_BOOST_PIN);
+    gpio_set_pin_output(DC_BOOST_PIN);
+    gpio_write_pin_low(DC_BOOST_PIN);
 
-    setPinInput(DRIVER_LED_CS_PIN);
-    setPinInput(DRIVER_SIDE_CS_PIN);
+    gpio_set_pin_input(DRIVER_LED_CS_PIN);
+    gpio_set_pin_input(DRIVER_SIDE_CS_PIN);
 
-    setPinOutput(DEV_MODE_PIN);
-    writePinLow(DEV_MODE_PIN);
+    gpio_set_pin_output(DEV_MODE_PIN);
+    gpio_write_pin_low(DEV_MODE_PIN);
 
-    setPinOutput(SYS_MODE_PIN);
-    writePinLow(SYS_MODE_PIN);
+    gpio_set_pin_output(SYS_MODE_PIN);
+    gpio_write_pin_low(SYS_MODE_PIN);
 
-    setPinOutput(A7);
-    writePinLow(A7);
-    setPinOutput(DRIVER_SIDE_PIN);
-    writePinLow(DRIVER_SIDE_PIN);
+    gpio_set_pin_output(A7);
+    gpio_write_pin_low(A7);
+    gpio_set_pin_output(DRIVER_SIDE_PIN);
+    gpio_write_pin_low(DRIVER_SIDE_PIN);
 
-    setPinOutput(B5);
-    writePinHigh(B5);
+    gpio_set_pin_output(B5);
+    gpio_write_pin_high(B5);
 
-    setPinOutput(NRF_WAKEUP_PIN);
-    writePinHigh(NRF_WAKEUP_PIN);
+    gpio_set_pin_output(NRF_WAKEUP_PIN);
+    gpio_write_pin_high(NRF_WAKEUP_PIN);
 
     // Enter low power mode and wait for interrupt signal
     PWR_EnterSTOPMode(PWR_Regulator_LowPower, PWR_STOPEntry_WFI);
@@ -212,26 +183,26 @@ void exit_deep_sleep(void) {
     m_uart_gpio_set_low_speed_and_pullup();
 
     // Restore IO working status
-    setPinInputHigh(DEV_MODE_PIN); // PC0
-    setPinInputHigh(SYS_MODE_PIN); // PC1
+    gpio_set_pin_input_high(DEV_MODE_PIN); // PC0
+    gpio_set_pin_input_high(SYS_MODE_PIN); // PC1
 
-    setPinOutput(NRF_WAKEUP_PIN);
+    gpio_set_pin_output(NRF_WAKEUP_PIN);
 
     // Enable DC boost
-    setPinOutput(DC_BOOST_PIN);
-    writePinHigh(DC_BOOST_PIN);
+    gpio_set_pin_output(DC_BOOST_PIN);
+    gpio_write_pin_high(DC_BOOST_PIN);
 
     // power on LEDs This is missing from Nuphy's logic.
-    setPinOutput(DRIVER_LED_CS_PIN);
-    writePinLow(DRIVER_LED_CS_PIN);
-    setPinOutput(DRIVER_SIDE_CS_PIN);
-    writePinLow(DRIVER_SIDE_CS_PIN);
+    gpio_set_pin_output(DRIVER_LED_CS_PIN);
+    gpio_write_pin_low(DRIVER_LED_CS_PIN);
+    gpio_set_pin_output(DRIVER_SIDE_CS_PIN);
+    gpio_write_pin_low(DRIVER_SIDE_CS_PIN);
 
     // Reinitialize the system clock
     stm32_clock_init();
 
     /* TIM6 Enable */
-    TIM_Cmd(TIM6, ENABLE);
+    if (tim6_enabled) TIM_Cmd(TIM6, ENABLE);
 
     // Send a handshake to wake up RF
     uart_send_cmd(CMD_HAND, 0, 1); // Handshake
@@ -256,11 +227,11 @@ void enter_light_sleep(void) {
         uart_send_cmd(CMD_SLEEP, 5, 5);
 
     // power off led
-    setPinOutput(DC_BOOST_PIN);
-    writePinLow(DC_BOOST_PIN);
+    gpio_set_pin_output(DC_BOOST_PIN);
+    gpio_write_pin_low(DC_BOOST_PIN);
 
-    setPinInput(DRIVER_LED_CS_PIN);
-    setPinInput(DRIVER_SIDE_CS_PIN);
+    gpio_set_pin_input(DRIVER_LED_CS_PIN);
+    gpio_set_pin_input(DRIVER_SIDE_CS_PIN);
 }
 
 /**
@@ -268,14 +239,14 @@ void enter_light_sleep(void) {
  * @note This is Nuphy's "open sourced" wake logic. It's not deep sleep.
  */
 void exit_light_sleep(void) {
-    setPinOutput(DC_BOOST_PIN);
-    writePinHigh(DC_BOOST_PIN);
+    gpio_set_pin_output(DC_BOOST_PIN);
+    gpio_write_pin_high(DC_BOOST_PIN);
 
     // power on LEDs
-    setPinOutput(DRIVER_LED_CS_PIN);
-    writePinLow(DRIVER_LED_CS_PIN);
-    setPinOutput(DRIVER_SIDE_CS_PIN);
-    writePinLow(DRIVER_SIDE_CS_PIN);
+    gpio_set_pin_output(DRIVER_LED_CS_PIN);
+    gpio_write_pin_low(DRIVER_LED_CS_PIN);
+    gpio_set_pin_output(DRIVER_SIDE_CS_PIN);
+    gpio_write_pin_low(DRIVER_SIDE_CS_PIN);
     uart_send_cmd(CMD_HAND, 0, 1);
 
     if (dev_info.link_mode == LINK_USB) {
@@ -404,6 +375,7 @@ void m_timer6_init(void) {
 
     /* TIM6 Enable */
     TIM_Cmd(TIM6, ENABLE);
+    tim6_enabled = true;
 }
 
 volatile uint8_t idle_sleep_cnt = 0;
