@@ -46,6 +46,7 @@ void deep_sleep_handle(void) {
     /* If RF is not connected anymore you would lose the first keystroke.
        This is expected behavior as the connection is not there.
     */
+   no_act_time     = 0; // required to not cause an immediate sleep on first wake
 }
 
 /**
