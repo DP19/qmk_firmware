@@ -32,17 +32,28 @@ extern bool            f_wakeup_prepare;
 extern uint8_t bitkb_report_buf[16];
 extern uint8_t bytekb_report_buf[8];
 
+void side_rgb_set_color_all(uint8_t r, uint8_t g, uint8_t b);
+void side_rgb_refresh(void);
+
 void deep_sleep_handle(void) {
     break_all_key(); // reset keys before sleeping for new QMK lifecycle to handle on wake.
     memset(bitkb_report_buf, 0, sizeof(bitkb_report_buf));
     memset(bytekb_report_buf, 0, sizeof(bytekb_report_buf));
+
+    // color blue when deep sleep is about to happen
+    side_rgb_set_color_all(0x00, 0x00, 0x99);
+    side_rgb_refresh();
+    wait_ms(500);
 
     // Sync again before sleeping
     dev_sts_sync();
 
     enter_deep_sleep(); // puts the board in WFI mode and pauses the MCU
     exit_deep_sleep();  // This gets called when there is an interrupt (wake) event.
-
+    // flash white on wake up
+    side_rgb_set_color_all(0x99, 0x99, 0x99);
+    side_rgb_refresh();
+    wait_ms(500);
     /* If RF is not connected anymore you would lose the first keystroke.
        This is expected behavior as the connection is not there.
     */

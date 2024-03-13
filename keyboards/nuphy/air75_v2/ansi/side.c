@@ -99,6 +99,15 @@ void side_rgb_set_color(int index, uint8_t red, uint8_t green, uint8_t blue) {
 }
 
 /**
+ * @brief Set all side LED colour
+ */
+void side_rgb_set_color_all(uint8_t r, uint8_t g, uint8_t b) {
+    for (uint8_t i = 0; i < 12; i++) {
+        side_rgb_set_color(i, r, g, b);
+    }
+}
+
+/**
  * @brief  refresh side leds.
  */
 void side_rgb_refresh(void) {
