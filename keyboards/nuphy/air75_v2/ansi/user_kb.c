@@ -439,7 +439,7 @@ void londing_eeprom_data(void) {
         rgb_matrix_sethsv(255, 255, RGB_MATRIX_MAXIMUM_BRIGHTNESS);
         rgb_matrix_set_speed(255);
         user_config.default_brightness_flag = 0xA5;
-        user_config.ee_side_mode            = 0; /*SIDE_WAVE*/
+        user_config.ee_side_mode            = 4; /*SIDE_OFF*/
         user_config.ee_side_light           = 0;
         user_config.ee_side_speed           = 2;
         user_config.ee_side_rgb             = 1;
