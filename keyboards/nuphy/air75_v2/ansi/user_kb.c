@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "user_kb.h"
 #include "ansi.h"
 #include "usb_main.h"
+#include "mcu_pwr.h"
 #include "rf_driver.h"
 
 user_config_t   user_config;
@@ -45,6 +46,7 @@ uint16_t       no_act_time           = 0;
 uint16_t       dev_reset_press_delay = 0;
 uint16_t       rf_sw_press_delay     = 0;
 uint16_t       rgb_test_press_delay  = 0;
+uint16_t       side_led_last_act     = 0;
 host_driver_t *m_host_driver         = 0;
 
 extern bool               f_rf_new_adv_ok;
@@ -64,9 +66,8 @@ extern uint8_t            side_colour;
 void gpio_init(void) {
     /* enable led power driver  */
     gpio_set_pin_output(DRIVER_LED_CS_PIN);
-    gpio_set_pin_output(DRIVER_SIDE_CS_PIN);
     gpio_write_pin_low(DRIVER_LED_CS_PIN);
-    gpio_write_pin_low(DRIVER_SIDE_CS_PIN);
+    pwr_side_led_on();
     /* set side led pin output low */
     gpio_set_pin_output(DRIVER_SIDE_PIN);
     gpio_write_pin_low(DRIVER_SIDE_PIN);
@@ -394,6 +395,38 @@ void timer_pro(void) {
     if (no_act_time < 0xffff) no_act_time++;
 
     if (rf_linking_time < 0xffff) rf_linking_time++;
+
+    if (side_led_last_act < 0xffff) side_led_last_act++;
+}
+
+/**
+ * @brief Handle LED power
+ * @note Turn off LEDs if not used to save some power. This is ported
+ *       from older Nuphy leaks.
+ */
+void led_power_handle(void) {
+    static uint32_t interval = 0;
+
+    if (timer_elapsed32(interval) < 500) // only check once in a while, less flickering for unhandled cases
+        return;
+
+    interval = timer_read32();
+
+    // if (rgb_led_last_act > 100) { // 10ms intervals
+    //     if (rgb_matrix_is_enabled() && rgb_matrix_get_val() != 0) {
+    //         pwr_rgb_led_on();
+    //     } else { // brightness is 0 or RGB off.
+    //         pwr_rgb_led_off();
+    //     }
+    // }
+
+    if (side_led_last_act > 100) { // 10ms intervals
+        if (user_config.ee_side_light == 0) {
+            pwr_side_led_off();
+        } else {
+            pwr_side_led_on();
+        }
+    }
 }
 
 /**
@@ -406,18 +439,12 @@ void londing_eeprom_data(void) {
         rgb_matrix_sethsv(255, 255, RGB_MATRIX_MAXIMUM_BRIGHTNESS);
         rgb_matrix_set_speed(255);
         user_config.default_brightness_flag = 0xA5;
-        user_config.ee_side_mode            = 4; /*SIDE_OFF*/
-        user_config.ee_side_light           = side_light;
-        user_config.ee_side_speed           = side_speed;
-        user_config.ee_side_rgb             = side_rgb;
-        user_config.ee_side_colour          = side_colour;
+        user_config.ee_side_mode            = 0; /*SIDE_WAVE*/
+        user_config.ee_side_light           = 0;
+        user_config.ee_side_speed           = 2;
+        user_config.ee_side_rgb             = 1;
+        user_config.ee_side_colour          = 0;
         user_config.sleep_enable            = true;
         eeconfig_update_kb_datablock(&user_config);
-    } else {
-        side_mode   = user_config.ee_side_mode;
-        side_light  = user_config.ee_side_light;
-        side_speed  = user_config.ee_side_speed;
-        side_rgb    = user_config.ee_side_rgb;
-        side_colour = user_config.ee_side_colour;
     }
 }

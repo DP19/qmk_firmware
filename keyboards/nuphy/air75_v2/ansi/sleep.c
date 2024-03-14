@@ -41,6 +41,8 @@ void deep_sleep_handle(void) {
     memset(bytekb_report_buf, 0, sizeof(bytekb_report_buf));
 
     // color blue when deep sleep is about to happen
+    pwr_side_led_on();
+    wait_ms(50); // give some time to ensure LED powers on.
     side_rgb_set_color_all(0x00, 0x00, 0x99);
     side_rgb_refresh();
     wait_ms(500);
@@ -50,14 +52,16 @@ void deep_sleep_handle(void) {
 
     enter_deep_sleep(); // puts the board in WFI mode and pauses the MCU
     exit_deep_sleep();  // This gets called when there is an interrupt (wake) event.
+
     // flash white on wake up
+    wait_ms(50); // give some time to ensure LED powers on.
     side_rgb_set_color_all(0x99, 0x99, 0x99);
     side_rgb_refresh();
     wait_ms(500);
     /* If RF is not connected anymore you would lose the first keystroke.
        This is expected behavior as the connection is not there.
     */
-   no_act_time     = 0; // required to not cause an immediate sleep on first wake
+    no_act_time = 0; // required to not cause an immediate sleep on first wake
 }
 
 /**

@@ -141,14 +141,17 @@ typedef struct
     uint8_t retain2;
 } user_config_t;
 
+extern uint16_t           side_led_last_act;
+extern uint8_t            rf_blink_cnt;
+
 void    dev_sts_sync(void);
 void    rf_uart_init(void);
 void    rf_device_init(void);
 void    uart_send_report_repeat(void);
 void    uart_receive_pro(void);
 void    uart_send_report(uint8_t report_type, uint8_t *report_buf, uint8_t report_size);
-void    side_speed_contol(uint8_t dir);
-void    side_light_contol(uint8_t dir);
+void    side_speed_control(uint8_t dir);
+void    side_light_control(uint8_t dir);
 void    side_colour_control(uint8_t dir);
 void    side_mode_control(uint8_t dir);
 void    side_led_show(void);
@@ -163,5 +166,6 @@ void    switch_dev_link(uint8_t mode);
 void    dial_sw_scan(void);
 void    dial_sw_fast_scan(void);
 void    timer_pro(void);
+void    led_power_handle(void);
 void    londing_eeprom_data(void);
 uint8_t uart_send_cmd(uint8_t cmd, uint8_t ack_cnt, uint8_t delayms);

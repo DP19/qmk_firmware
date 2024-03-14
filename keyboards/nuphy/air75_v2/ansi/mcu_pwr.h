@@ -70,3 +70,11 @@ void enter_light_sleep(void);
 void exit_light_sleep(void);
 void enter_deep_sleep(void);
 void exit_deep_sleep(void);
+
+void pwr_side_led_off(void);
+void pwr_side_led_on(void);
+
+bool is_side_led_on(void);
+
+void led_pwr_sleep_handle(void);
+void led_pwr_wake_handle(void);

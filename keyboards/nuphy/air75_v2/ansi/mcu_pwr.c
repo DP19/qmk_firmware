@@ -25,15 +25,9 @@ static const pin_t col_pins[MATRIX_COLS] = MATRIX_COL_PINS;
 extern DEV_INFO_STRUCT dev_info;
 
 bool f_usb_deinit = 0;
+static bool side_led_powered_off = 0;
+static bool side_led_on = 0;
 static bool tim6_enabled         = false;
-
-/** ================================================================
- * @brief   UART_GPIO Toggle rate configuration low speed + pull-up
- ================================================================*/
-void m_uart_gpio_set_low_speed_and_pullup(void) {
-    ((GPIO_TypeDef *)GPIOB)->OSPEEDR &= ~(GPIO_OSPEEDER_OSPEEDR6 | GPIO_OSPEEDER_OSPEEDR7);
-    ((GPIO_TypeDef *)GPIOB)->PUPDR |= (GPIO_PUPDR_PUPDR6_0 | GPIO_PUPDR_PUPDR7_0);
-}
 
 /** ================================================================
  * @brief   Turn Off USB
@@ -152,7 +146,8 @@ void enter_deep_sleep(void) {
     gpio_write_pin_low(DC_BOOST_PIN);
 
     gpio_set_pin_input(DRIVER_LED_CS_PIN);
-    gpio_set_pin_input(DRIVER_SIDE_CS_PIN);
+    
+    led_pwr_sleep_handle();
 
     gpio_set_pin_output(DEV_MODE_PIN);
     gpio_write_pin_low(DEV_MODE_PIN);
@@ -165,8 +160,8 @@ void enter_deep_sleep(void) {
     gpio_set_pin_output(DRIVER_SIDE_PIN);
     gpio_write_pin_low(DRIVER_SIDE_PIN);
 
-    gpio_set_pin_output(B5);
-    gpio_write_pin_high(B5);
+    gpio_set_pin_output(NRF_TEST_PIN);
+    gpio_write_pin_high(NRF_TEST_PIN);
 
     gpio_set_pin_output(NRF_WAKEUP_PIN);
     gpio_write_pin_high(NRF_WAKEUP_PIN);
@@ -179,8 +174,6 @@ void exit_deep_sleep(void) {
     // Matrix initialization
     extern void matrix_init_pins(void);
     matrix_init_pins();
-
-    m_uart_gpio_set_low_speed_and_pullup();
 
     // Restore IO working status
     gpio_set_pin_input_high(DEV_MODE_PIN); // PC0
@@ -195,8 +188,7 @@ void exit_deep_sleep(void) {
     // power on LEDs This is missing from Nuphy's logic.
     gpio_set_pin_output(DRIVER_LED_CS_PIN);
     gpio_write_pin_low(DRIVER_LED_CS_PIN);
-    gpio_set_pin_output(DRIVER_SIDE_CS_PIN);
-    gpio_write_pin_low(DRIVER_SIDE_CS_PIN);
+    led_pwr_wake_handle();
 
     // Reinitialize the system clock
     stm32_clock_init();
@@ -231,7 +223,7 @@ void enter_light_sleep(void) {
     gpio_write_pin_low(DC_BOOST_PIN);
 
     gpio_set_pin_input(DRIVER_LED_CS_PIN);
-    gpio_set_pin_input(DRIVER_SIDE_CS_PIN);
+    led_pwr_sleep_handle();
 }
 
 /**
@@ -245,14 +237,46 @@ void exit_light_sleep(void) {
     // power on LEDs
     gpio_set_pin_output(DRIVER_LED_CS_PIN);
     gpio_write_pin_low(DRIVER_LED_CS_PIN);
-    gpio_set_pin_output(DRIVER_SIDE_CS_PIN);
-    gpio_write_pin_low(DRIVER_SIDE_CS_PIN);
+    led_pwr_wake_handle();
     uart_send_cmd(CMD_HAND, 0, 1);
 
     if (dev_info.link_mode == LINK_USB) {
         usb_lld_wakeup_host(&USB_DRIVER);
         restart_usb_driver(&USB_DRIVER);
     }
+}
+
+void led_pwr_sleep_handle(void) {
+    // reset the flags.
+    side_led_powered_off = 0;
+
+    if (is_side_led_on()) {
+        side_led_powered_off = 1;
+        pwr_side_led_off();
+    }
+}
+
+void led_pwr_wake_handle(void) {
+    if (side_led_powered_off) {
+        pwr_side_led_on();
+    }
+}
+
+void pwr_side_led_off(void) {
+    if (!side_led_on) return;
+    gpio_set_pin_input(DRIVER_SIDE_CS_PIN);
+    side_led_on = 0;
+}
+
+void pwr_side_led_on(void) {
+    if (side_led_on) return;
+    gpio_set_pin_output(DRIVER_SIDE_CS_PIN);
+    gpio_write_pin_low(DRIVER_SIDE_CS_PIN);
+    side_led_on = 1;
+}
+
+bool is_side_led_on(void) {
+    return side_led_on;
 }
 
 /**
@@ -338,17 +362,6 @@ void EXTI_StructInit(EXTI_InitTypeDef *EXTI_InitStruct) {
     EXTI_InitStruct->EXTI_Mode    = EXTI_Mode_Interrupt;
     EXTI_InitStruct->EXTI_Trigger = EXTI_Trigger_Falling;
     EXTI_InitStruct->EXTI_LineCmd = DISABLE;
-}
-
-void uart_init(uint32_t baud); // qmk uart.c
-void m_uart1_init(void) {
-    uart_init(460800); // RF communication serial port initialization
-    USART_Cmd(USART1, DISABLE);
-    // Enable 9bit and enable even parity
-    USART1->CR1 |= USART_CR1_M0 | USART_CR1_PCE;
-    USART_Cmd(USART1, ENABLE);
-
-    m_uart_gpio_set_low_speed_and_pullup();
 }
 
 void m_timer6_init(void) {
