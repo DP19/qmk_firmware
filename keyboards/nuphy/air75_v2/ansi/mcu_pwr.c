@@ -26,6 +26,8 @@ extern DEV_INFO_STRUCT dev_info;
 
 bool f_usb_deinit = 0;
 static bool side_led_powered_off = 0;
+static bool rgb_led_powered_off  = 0;
+static bool rgb_led_on  = 0;
 static bool side_led_on = 0;
 static bool tim6_enabled         = false;
 
@@ -141,12 +143,7 @@ void enter_deep_sleep(void) {
     NVIC_InitStructure.NVIC_IRQChannel = EXTI2_3_IRQn;
     NVIC_Init(&NVIC_InitStructure);
 
-    // power off leds
-    gpio_set_pin_output(DC_BOOST_PIN);
-    gpio_write_pin_low(DC_BOOST_PIN);
-
-    gpio_set_pin_input(DRIVER_LED_CS_PIN);
-    
+    // power off leds  
     led_pwr_sleep_handle();
 
     gpio_set_pin_output(DEV_MODE_PIN);
@@ -181,13 +178,7 @@ void exit_deep_sleep(void) {
 
     gpio_set_pin_output(NRF_WAKEUP_PIN);
 
-    // Enable DC boost
-    gpio_set_pin_output(DC_BOOST_PIN);
-    gpio_write_pin_high(DC_BOOST_PIN);
-
-    // power on LEDs This is missing from Nuphy's logic.
-    gpio_set_pin_output(DRIVER_LED_CS_PIN);
-    gpio_write_pin_low(DRIVER_LED_CS_PIN);
+    // Power on LEDs
     led_pwr_wake_handle();
 
     // Reinitialize the system clock
@@ -198,14 +189,7 @@ void exit_deep_sleep(void) {
 
     // Send a handshake to wake up RF
     uart_send_cmd(CMD_HAND, 0, 1); // Handshake
-
-    // Should re-init USB regardless probably if it was deinitialized.
-    if (f_usb_deinit) {
-        // USB remote wake up
-        usbWakeupHost(&USB_DRIVER);
-        restart_usb_driver(&USB_DRIVER);
-        f_usb_deinit = 0;
-    }
+    dev_info.rf_state = RF_WAKE;
 }
 
 /**
@@ -219,10 +203,6 @@ void enter_light_sleep(void) {
         uart_send_cmd(CMD_SLEEP, 5, 5);
 
     // power off led
-    gpio_set_pin_output(DC_BOOST_PIN);
-    gpio_write_pin_low(DC_BOOST_PIN);
-
-    gpio_set_pin_input(DRIVER_LED_CS_PIN);
     led_pwr_sleep_handle();
 }
 
@@ -231,15 +211,14 @@ void enter_light_sleep(void) {
  * @note This is Nuphy's "open sourced" wake logic. It's not deep sleep.
  */
 void exit_light_sleep(void) {
-    gpio_set_pin_output(DC_BOOST_PIN);
-    gpio_write_pin_high(DC_BOOST_PIN);
-
-    // power on LEDs
-    gpio_set_pin_output(DRIVER_LED_CS_PIN);
-    gpio_write_pin_low(DRIVER_LED_CS_PIN);
     led_pwr_wake_handle();
-    uart_send_cmd(CMD_HAND, 0, 1);
 
+    if (dev_info.rf_state != RF_CONNECT) {
+        uart_send_cmd(CMD_HAND, 0, 1);
+        // flag for RF wakeup workload.
+        dev_info.rf_state = RF_WAKE;
+    }
+    
     if (dev_info.link_mode == LINK_USB) {
         usb_lld_wakeup_host(&USB_DRIVER);
         restart_usb_driver(&USB_DRIVER);
@@ -249,17 +228,46 @@ void exit_light_sleep(void) {
 void led_pwr_sleep_handle(void) {
     // reset the flags.
     side_led_powered_off = 0;
+    rgb_led_powered_off  = 0;
 
+    // power off leds if they were enabled
+    if (is_rgb_led_on()) {
+        rgb_led_powered_off = 1;
+        pwr_rgb_led_off();
+    }
     if (is_side_led_on()) {
         side_led_powered_off = 1;
         pwr_side_led_off();
     }
+    
 }
 
 void led_pwr_wake_handle(void) {
+    if (rgb_led_powered_off) {
+        pwr_rgb_led_on();
+    }
     if (side_led_powered_off) {
         pwr_side_led_on();
     }
+}
+
+void pwr_rgb_led_off(void) {
+    if (!rgb_led_on) return;
+    // LED power supply off
+    gpio_set_pin_output(DC_BOOST_PIN);
+    gpio_write_pin_low(DC_BOOST_PIN);
+    gpio_set_pin_input(DRIVER_LED_CS_PIN);
+    rgb_led_on = 0;
+}
+
+void pwr_rgb_led_on(void) {
+    if (rgb_led_on) return;
+    // LED power supply on
+    gpio_set_pin_output(DC_BOOST_PIN);
+    gpio_write_pin_high(DC_BOOST_PIN);
+    gpio_set_pin_output(DRIVER_LED_CS_PIN);
+    gpio_write_pin_low(DRIVER_LED_CS_PIN);
+    rgb_led_on = 1;
 }
 
 void pwr_side_led_off(void) {
@@ -273,6 +281,10 @@ void pwr_side_led_on(void) {
     gpio_set_pin_output(DRIVER_SIDE_CS_PIN);
     gpio_write_pin_low(DRIVER_SIDE_CS_PIN);
     side_led_on = 1;
+}
+
+bool is_rgb_led_on(void) {
+    return rgb_led_on;
 }
 
 bool is_side_led_on(void) {

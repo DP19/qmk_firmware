@@ -49,6 +49,7 @@ typedef enum {
 #define RF_SNIF                 6
 #define RF_INVAILD              0XFE
 #define RF_ERR_STATE            0XFF
+#define RF_WAKE                 0XA5 // jincao1 made this up
 
 #define CMD_POWER_UP            0XF0
 #define CMD_SLEEP               0XF1
@@ -97,7 +98,8 @@ typedef enum {
 #define HOST_BLE_TYPE           1
 #define HOST_RF_TYPE            2
 
-#define LINK_TIMEOUT            (100 * 120)
+#define LINK_TIMEOUT            (100 * 60)
+#define LIGHT_SLEEP_DELAY       (100 * 120)
 #define SLEEP_TIME_DELAY        (100 * 360)
 #define POWER_DOWN_DELAY        (24)
 
@@ -167,5 +169,6 @@ void    dial_sw_scan(void);
 void    dial_sw_fast_scan(void);
 void    timer_pro(void);
 void    led_power_handle(void);
+void    user_set_rgb_color(int index, uint8_t red, uint8_t green, uint8_t blue);
 void    londing_eeprom_data(void);
 uint8_t uart_send_cmd(uint8_t cmd, uint8_t ack_cnt, uint8_t delayms);

@@ -34,6 +34,7 @@ bool f_rf_new_adv_ok   = 0;
 bool f_rf_reset        = 0;
 bool f_rf_hand_ok      = 0;
 bool f_goto_sleep      = 0;
+bool f_force_deep      = 0;
 bool f_wakeup_prepare  = 0;
 
 uint8_t  uart_bit_report_buf[32] = {0};
@@ -259,6 +260,7 @@ void rf_protocol_receive(void) {
 
             case CMD_24G_SUSPEND: {
                 f_goto_sleep = 1;
+                f_force_deep = 1;
                 break;
             }
 

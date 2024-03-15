@@ -77,6 +77,7 @@ extern uint16_t        rf_link_show_time;
 extern bool            f_bat_hold;
 extern bool            f_sys_show;
 extern bool            f_sleep_show;
+extern bool            f_goto_sleep;
 
 void side_ws2812_setleds(rgb_led_t *ledarray, uint16_t leds);
 void rgb_matrix_update_pwm_buffers(void);
@@ -553,11 +554,11 @@ void bat_num_led(uint8_t bat_percent) {
     }
 
     for (uint8_t i = 1; i <= bat_pct_tens; i++) {
-        rgb_matrix_set_color(i, r, g, b);
+        user_set_rgb_color(i, r, g, b);
     }
 
     for (uint8_t i = 0; i < bat_pct_ones; i++) {
-        rgb_matrix_set_color(29 - i, r, g, b);
+        user_set_rgb_color(29 - i, r, g, b);
     }
 }
 
@@ -569,7 +570,7 @@ void num_led_show(void) {
 
 void bat_led_close(void) {
     for (int i = 20; i <= 29; i++) {
-        rgb_matrix_set_color(i, 0, 0, 0);
+        user_set_rgb_color(i, 0, 0, 0);
     }
 }
 
@@ -825,7 +826,7 @@ void side_led_show(void) {
     rf_led_show();
 
     // This only refreshes if LEDs change anyways. Fixes side LED not refreshing synchronously.
-    if (do_refresh || timer_elapsed32(side_refresh_time) >= 10) {
+    if ((do_refresh || timer_elapsed32(side_refresh_time) >= 10) && !f_goto_sleep) {
         side_refresh_time = timer_read32();
         do_refresh        = false;
         side_rgb_refresh();

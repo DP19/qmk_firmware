@@ -27,6 +27,7 @@ extern uint16_t        rf_linking_time;
 extern uint16_t        rf_link_timeout;
 extern uint16_t        no_act_time;
 extern bool            f_goto_sleep;
+extern bool            f_force_deep;
 extern bool            f_wakeup_prepare;
 
 extern uint8_t bitkb_report_buf[16];
@@ -35,29 +36,32 @@ extern uint8_t bytekb_report_buf[8];
 void side_rgb_set_color_all(uint8_t r, uint8_t g, uint8_t b);
 void side_rgb_refresh(void);
 
+void signal_sleep(uint8_t r, uint8_t g, uint8_t b) {
+    // Visual cue for sleep/wake on side LED.
+    pwr_side_led_on();
+    wait_ms(50); // give some time to ensure LED powers on.
+    side_rgb_set_color_all(r, g, b);
+    side_rgb_refresh();
+    wait_ms(300);
+}
+
 void deep_sleep_handle(void) {
     break_all_key(); // reset keys before sleeping for new QMK lifecycle to handle on wake.
     memset(bitkb_report_buf, 0, sizeof(bitkb_report_buf));
     memset(bytekb_report_buf, 0, sizeof(bytekb_report_buf));
 
-    // color blue when deep sleep is about to happen
-    pwr_side_led_on();
-    wait_ms(50); // give some time to ensure LED powers on.
-    side_rgb_set_color_all(0x00, 0x00, 0x99);
-    side_rgb_refresh();
-    wait_ms(500);
+    // flash blue when deep sleep is about to happen
+    signal_sleep(0x00, 0x00, 0x99);
 
     // Sync again before sleeping
     dev_sts_sync();
 
     enter_deep_sleep(); // puts the board in WFI mode and pauses the MCU
     exit_deep_sleep();  // This gets called when there is an interrupt (wake) event.
+    f_goto_sleep = 0;
 
     // flash white on wake up
-    wait_ms(50); // give some time to ensure LED powers on.
-    side_rgb_set_color_all(0x99, 0x99, 0x99);
-    side_rgb_refresh();
-    wait_ms(500);
+    signal_sleep(0x99, 0x99, 0x99);
     /* If RF is not connected anymore you would lose the first keystroke.
        This is expected behavior as the connection is not there.
     */
@@ -78,12 +82,10 @@ void sleep_handle(void) {
 
     // sleep process;
     if (f_goto_sleep) {
-        f_goto_sleep    = 0;
         bool deep_sleep = 0;
         if (user_config.sleep_enable) {
             deep_sleep = 1;
-            // light sleep if charging? Charging event might keep waking MCU. To be confirmed...
-            if (dev_info.rf_charge & 0x01) {
+            if (no_act_time < SLEEP_TIME_DELAY && !f_force_deep) {
                 deep_sleep = 0;
             }
             // or if it's in USB mode but USB state is suspended
@@ -94,6 +96,7 @@ void sleep_handle(void) {
         }
 
         if (deep_sleep) {
+            f_force_deep = 0;
             deep_sleep_handle();
             return; // don't need to do anything else
         } else {
@@ -107,31 +110,28 @@ void sleep_handle(void) {
     if (f_wakeup_prepare) {
         if (no_act_time < 10) { // activity wake up
             f_wakeup_prepare = 0;
+            f_goto_sleep = 0;
             exit_light_sleep();
-        }
-        // No longer charging? Go deep sleep.
-        // TODO: don't really know true charge bit logic. I'm just guessing here.
-        else if ((dev_info.rf_charge & 0x01) == 0) {
-            f_wakeup_prepare = 0;
-            deep_sleep_handle();
-            return;
         }
     }
 
     // sleep check, won't reach here on deep sleep.
-    if (f_goto_sleep || f_wakeup_prepare) return;
+    if (f_wakeup_prepare) return;
+    
+    // determine sleep state
     if (dev_info.link_mode == LINK_USB) {
         if (USB_DRIVER.state == USB_SUSPENDED) {
             usb_suspend_debounce++;
             if (usb_suspend_debounce >= 20) {
                 f_goto_sleep = 1;
+                f_force_deep = 1;
             }
         } else {
             usb_suspend_debounce = 0;
         }
     } else if (dev_info.rf_state == RF_CONNECT) {
         rf_disconnect_time = 0;
-        if (no_act_time >= SLEEP_TIME_DELAY) {
+        if (no_act_time >= LIGHT_SLEEP_DELAY) {
             f_goto_sleep = 1;
         }
     } else if (rf_linking_time >= LINK_TIMEOUT) {
@@ -142,6 +142,7 @@ void sleep_handle(void) {
         if (rf_disconnect_time > 5 * 20) {
             rf_disconnect_time = 0;
             f_goto_sleep       = 1;
+            f_force_deep       = 1;
         }
     }
 }
