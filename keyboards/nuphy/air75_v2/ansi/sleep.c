@@ -85,7 +85,10 @@ void sleep_handle(void) {
         bool deep_sleep = 0;
         if (user_config.sleep_enable) {
             deep_sleep = 1;
-            if (no_act_time < SLEEP_TIME_DELAY && !f_force_deep) {
+            if (f_force_deep) {
+             // Deep is already set just skip the reset of the else checks
+            }
+            else if (no_act_time < SLEEP_TIME_DELAY) {
                 deep_sleep = 0;
             }
             // or if it's in USB mode but USB state is suspended
