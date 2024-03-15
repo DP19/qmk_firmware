@@ -197,10 +197,11 @@ void exit_deep_sleep(void) {
  * @note This is Nuphy's "open sourced" sleep logic. It's not deep sleep.
  */
 void enter_light_sleep(void) {
-    if (dev_info.rf_state == RF_CONNECT)
-        uart_send_cmd(CMD_SET_CONFIG, 5, 5);
-    else
-        uart_send_cmd(CMD_SLEEP, 5, 5);
+    // Just cut led power
+    // if (dev_info.rf_state == RF_CONNECT)
+    //     uart_send_cmd(CMD_SET_CONFIG, 5, 5);
+    // else
+    //     uart_send_cmd(CMD_SLEEP, 5, 5);
 
     // power off led
     led_pwr_sleep_handle();
