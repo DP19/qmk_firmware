@@ -159,6 +159,7 @@
         ],
         "max_brightness": 128,
         "speed_steps": 52,
+        "sleep": true,
         "val_steps": 26
     },
     "usb": {
