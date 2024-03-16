@@ -24,11 +24,11 @@ static const pin_t col_pins[MATRIX_COLS] = MATRIX_COL_PINS;
 
 extern DEV_INFO_STRUCT dev_info;
 
-bool f_usb_deinit = 0;
+bool        f_usb_deinit         = 0;
 static bool side_led_powered_off = 0;
 static bool rgb_led_powered_off  = 0;
-static bool rgb_led_on  = 0;
-static bool side_led_on = 0;
+static bool rgb_led_on           = 0;
+static bool side_led_on          = 0;
 static bool tim6_enabled         = false;
 
 /** ================================================================
@@ -143,7 +143,7 @@ void enter_deep_sleep(void) {
     NVIC_InitStructure.NVIC_IRQChannel = EXTI2_3_IRQn;
     NVIC_Init(&NVIC_InitStructure);
 
-    // power off leds  
+    // power off leds
     led_pwr_sleep_handle();
 
     gpio_set_pin_output(DEV_MODE_PIN);
@@ -197,12 +197,11 @@ void exit_deep_sleep(void) {
  * @note This is Nuphy's "open sourced" sleep logic. It's not deep sleep.
  */
 void enter_light_sleep(void) {
-    // Just cut led power
-    // if (dev_info.rf_state == RF_CONNECT)
-    //     uart_send_cmd(CMD_SET_CONFIG, 5, 5);
-    // else
-    //     uart_send_cmd(CMD_SLEEP, 5, 5);
-
+    if (dev_info.rf_state == RF_CONNECT) {
+        // leave connection state
+    } else {
+        uart_send_cmd(CMD_SLEEP, 5, 5);
+    }
     // power off led
     led_pwr_sleep_handle();
 }
@@ -219,7 +218,7 @@ void exit_light_sleep(void) {
         // flag for RF wakeup workload.
         dev_info.rf_state = RF_WAKE;
     }
-    
+
     if (dev_info.link_mode == LINK_USB) {
         usb_lld_wakeup_host(&USB_DRIVER);
         restart_usb_driver(&USB_DRIVER);
@@ -240,7 +239,6 @@ void led_pwr_sleep_handle(void) {
         side_led_powered_off = 1;
         pwr_side_led_off();
     }
-    
 }
 
 void led_pwr_wake_handle(void) {

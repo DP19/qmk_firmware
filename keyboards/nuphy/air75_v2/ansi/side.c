@@ -40,7 +40,7 @@ enum {
     SIDE_OFF,
 };
 
-bool    flush_side_leds = false;
+bool      flush_side_leds = false;
 uint8_t   side_play_point = 0;
 uint8_t   r_temp, g_temp, b_temp;
 rgb_led_t side_leds[SIDE_LED_NUM] = {0};
@@ -224,7 +224,7 @@ void side_mode_control(uint8_t dir) {
             user_config.ee_side_mode = SIDE_OFF;
         }
     }
-    side_play_point          = 0;
+    side_play_point = 0;
     eeconfig_update_kb_datablock(&user_config);
 }
 

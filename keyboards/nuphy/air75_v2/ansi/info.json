@@ -1,85 +1,75 @@
 {
-    "keyboard_name": "NuPhy Air75 V2",
     "manufacturer": "NuPhy",
-    "usb":{
-        "vid": "0x19F5",
-        "pid": "0x3245",
-        "device_version": "0.0.1",
-        "no_startup_check": true
-    },
-    "features": {
-        "bootmagic": true,
-        "mousekey": false,
-        "extrakey": true,
-        "console": false,
-        "command": false,
-        "nkro": true,
-        "key_lock": true,
-        "rgb_matrix": true
-    },
-    "processor": "STM32F072",
+    "keyboard_name": "NuPhy Air75 V2",
     "bootloader": "stm32-dfu",
     "debounce": 2,
-    "matrix_pins": {
-        "cols": ["A4", "A5", "A6", "B9", "B0", "B1", "B10", "B11", "B12", "B13", "B14", "B15", "A8", "A9", "A10", "A15", "B3"],
-        "rows": ["C14", "C15", "A0", "A1", "A2", "A3"]
-    },
     "diode_direction": "COL2ROW",
     "dynamic_keymap": {
         "layer_count": 8,
         "micro_delay": 8
     },
+    "features": {
+        "bootmagic": true,
+        "command": false,
+        "console": false,
+        "extrakey": true,
+        "key_lock": true,
+        "mousekey": false,
+        "nkro": true,
+        "rgb_matrix": true
+    },
+    "matrix_pins": {
+        "cols": ["A4", "A5", "A6", "B9", "B0", "B1", "B10", "B11", "B12", "B13", "B14", "B15", "A8", "A9", "A10", "A15", "B3"],
+        "rows": ["C14", "C15", "A0", "A1", "A2", "A3"]
+    },
+    "processor": "STM32F072",
     "qmk": {
         "tap_keycode_delay": 8
-      },
+    },
     "rgb_matrix": {
-      "driver": "ws2812",
-      "center_point": [80, 30],
-      "max_brightness": 128,
-      "val_steps": 26,
-      "speed_steps": 52,
-      "sleep": true,
-      "animations": {
-          "gradient_up_down": true,
-          "gradient_left_right": true,
-          "breathing": true,
-          "band_sat": true,
-          "band_val": true,
-          "band_pinwheel_sat": true,
-          "band_pinwheel_val": true,
-          "band_spiral_sat": true,
-          "band_spiral_val": true,
-          "cycle_all": true,
-          "cycle_left_right": true,
-          "cycle_up_down": true,
-          "rainbow_moving_chevron": true,
-          "cycle_out_in": true,
-          "cycle_out_in_dual": true,
-          "cycle_pinwheel": true,
-          "cycle_spiral": true,
-          "dual_beacon": true,
-          "rainbow_beacon": true,
-          "rainbow_pinwheels": true,
-          "raindrops": true,
-          "jellybean_raindrops": true,
-          "hue_breathing": true,
-          "hue_pendulum": true,
-          "hue_wave": true,
-          "typing_heatmap": true,
-          "digital_rain": true,
-          "solid_reactive_simple": true,
-          "solid_reactive": true,
-          "solid_reactive_wide": true,
-          "solid_reactive_multiwide": true,
-          "solid_reactive_cross": true,
-          "solid_reactive_multicross": true,
-          "solid_reactive_nexus": true,
-          "solid_reactive_multinexus": true,
-          "splash": true,
-          "multisplash": true,
-          "solid_splash": true,
-          "solid_multisplash": true
+        "animations": {
+            "band_pinwheel_sat": true,
+            "band_pinwheel_val": true,
+            "band_sat": true,
+            "band_spiral_sat": true,
+            "band_spiral_val": true,
+            "band_val": true,
+            "breathing": true,
+            "cycle_all": true,
+            "cycle_left_right": true,
+            "cycle_out_in": true,
+            "cycle_out_in_dual": true,
+            "cycle_pinwheel": true,
+            "cycle_spiral": true,
+            "cycle_up_down": true,
+            "digital_rain": true,
+            "dual_beacon": true,
+            "gradient_left_right": true,
+            "gradient_up_down": true,
+            "hue_breathing": true,
+            "hue_pendulum": true,
+            "hue_wave": true,
+            "jellybean_raindrops": true,
+            "multisplash": true,
+            "rainbow_beacon": true,
+            "rainbow_moving_chevron": true,
+            "rainbow_pinwheels": true,
+            "raindrops": true,
+            "solid_multisplash": true,
+            "solid_reactive": true,
+            "solid_reactive_cross": true,
+            "solid_reactive_multicross": true,
+            "solid_reactive_multinexus": true,
+            "solid_reactive_multiwide": true,
+            "solid_reactive_nexus": true,
+            "solid_reactive_simple": true,
+            "solid_reactive_wide": true,
+            "solid_splash": true,
+            "splash": true,
+            "typing_heatmap": true
         },
+        "center_point": [80, 30],
+        "driver": "ws2812",
         "layout": [
             {"matrix": [0, 0], "x": 0, "y": 0, "flags": 4},
             {"matrix": [0, 1], "x": 10, "y": 0, "flags": 4},
@@ -97,7 +87,6 @@
             {"matrix": [2, 14], "x": 130, "y": 0, "flags": 4},
             {"matrix": [0, 15], "x": 140, "y": 0, "flags": 4},
             {"matrix": [0, 14], "x": 150, "y": 0, "flags": 4},
-
             {"matrix": [1, 16], "x": 150, "y": 10, "flags": 4},
             {"matrix": [1, 13], "x": 130, "y": 10, "flags": 4},
             {"matrix": [1, 12], "x": 120, "y": 10, "flags": 4},
@@ -113,7 +102,6 @@
             {"matrix": [1, 2], "x": 20, "y": 10, "flags": 4},
             {"matrix": [1, 1], "x": 10, "y": 10, "flags": 4},
             {"matrix": [1, 0], "x": 0, "y": 10, "flags": 4},
-
             {"matrix": [2, 0], "x": 0, "y": 20, "flags": 4},
             {"matrix": [2, 1], "x": 15, "y": 20, "flags": 4},
             {"matrix": [2, 2], "x": 25, "y": 20, "flags": 4},
@@ -129,7 +117,6 @@
             {"matrix": [2, 12], "x": 125, "y": 20, "flags": 4},
             {"matrix": [2, 13], "x": 135, "y": 20, "flags": 4},
             {"matrix": [2, 16], "x": 150, "y": 20, "flags": 4},
-
             {"matrix": [1, 15], "x": 150, "y": 30, "flags": 4},
             {"matrix": [3, 13], "x": 127.5, "y": 30, "flags": 4},
             {"matrix": [3, 11], "x": 117.5, "y": 30, "flags": 4},
@@ -144,7 +131,6 @@
             {"matrix": [3, 2], "x": 27.5, "y": 30, "flags": 4},
             {"matrix": [3, 1], "x": 17.5, "y": 30, "flags": 4},
             {"matrix": [3, 0], "x": 0, "y": 30, "flags": 4},
-
             {"matrix": [4, 0], "x": 0, "y": 40, "flags": 4},
             {"matrix": [4, 2], "x": 22.5, "y": 40, "flags": 4},
             {"matrix": [4, 3], "x": 32.5, "y": 40, "flags": 4},
@@ -159,7 +145,6 @@
             {"matrix": [4, 13], "x": 122.5, "y": 40, "flags": 4},
             {"matrix": [4, 14], "x": 140, "y": 40, "flags": 4},
             {"matrix": [2, 15], "x": 150, "y": 40, "flags": 4},
-
             {"matrix": [5, 15], "x": 150, "y": 50, "flags": 4},
             {"matrix": [5, 14], "x": 140, "y": 50, "flags": 4},
             {"matrix": [5, 13], "x": 130, "y": 50, "flags": 4},
@@ -171,7 +156,16 @@
             {"matrix": [5, 1], "x": 12.5, "y": 50, "flags": 4},
             {"matrix": [5, 0], "x": 0, "y": 50, "flags": 4},
             {"flags": 4}
-        ]
+        ],
+        "max_brightness": 128,
+        "speed_steps": 52,
+        "val_steps": 26
+    },
+    "usb": {
+        "device_version": "0.0.1",
+        "no_startup_check": true,
+        "pid": "0x3245",
+        "vid": "0x19F5"
     },
     "ws2812": {
         "pin": "A7"
@@ -196,7 +190,6 @@
                 {"label": "Print", "matrix": [2, 14], "x": 13, "y": 0},
                 {"label": "Ins", "matrix": [0, 15], "x": 14, "y": 0},
                 {"label": "Del", "matrix": [0, 14], "x": 15, "y": 0},
-
                 {"label": "~`", "matrix": [1, 0], "x": 0, "y": 1},
                 {"label": "!1", "matrix": [1, 1], "x": 1, "y": 1},
                 {"label": "@2", "matrix": [1, 2], "x": 2, "y": 1},
@@ -212,7 +205,6 @@
                 {"label": "+=", "matrix": [1, 12], "x": 12, "y": 1},
                 {"label": "Backsp", "matrix": [1, 13], "x": 13, "y": 1, "w": 2},
                 {"label": "PageUp", "matrix": [1, 16], "x": 15, "y": 1},
-
                 {"label": "Tab", "matrix": [2, 0], "x": 0, "y": 2, "w": 1.5},
                 {"label": "Q", "matrix": [2, 1], "x": 1.5, "y": 2},
                 {"label": "W", "matrix": [2, 2], "x": 2.5, "y": 2},
@@ -228,7 +220,6 @@
                 {"label": "}]", "matrix": [2, 12], "x": 12.5, "y": 2},
                 {"label": "|\\", "matrix": [2, 13], "x": 13.5, "y": 2, "w": 1.5},
                 {"label": "PageDn", "matrix": [2, 16], "x": 15, "y": 2},
-
                 {"label": "Caps", "matrix": [3, 0], "x": 0, "y": 3, "w": 1.75},
                 {"label": "A", "matrix": [3, 1], "x": 1.75, "y": 3},
                 {"label": "S", "matrix": [3, 2], "x": 2.75, "y": 3},
@@ -243,7 +234,6 @@
                 {"label": "\"", "matrix": [3, 11], "x": 11.75, "y": 3},
                 {"label": "Enter", "matrix": [3, 13], "x": 12.75, "y": 3, "w": 2.25},
                 {"label": "Home", "matrix": [1, 15], "x": 15, "y": 3},
-
                 {"label": "Shift", "matrix": [4, 0], "x": 0, "y": 4, "w": 2.25},
                 {"label": "Z", "matrix": [4, 2], "x": 2.25, "y": 4},
                 {"label": "X", "matrix": [4, 3], "x": 3.25, "y": 4},
@@ -256,9 +246,8 @@
                 {"label": ">.", "matrix": [4, 10], "x": 10.25, "y": 4},
                 {"label": "?/", "matrix": [4, 11], "x": 11.25, "y": 4},
                 {"label": "Shift", "matrix": [4, 13], "x": 12.25, "y": 4, "w": 1.75},
-                {"label": "↑", "matrix": [4, 14], "x": 14, "y": 4},
+                {"label": "\u2191", "matrix": [4, 14], "x": 14, "y": 4},
                 {"label": "End", "matrix": [2, 15], "x": 15, "y": 4},
-
                 {"label": "Ctrl", "matrix": [5, 0], "x": 0, "y": 5, "w": 1.25},
                 {"label": "Opt", "matrix": [5, 1], "x": 1.25, "y": 5, "w": 1.25},
                 {"label": "Cmd", "matrix": [5, 2], "x": 2.5, "y": 5, "w": 1.25},
@@ -266,12 +255,10 @@
                 {"label": "Cmd", "matrix": [5, 9], "x": 10, "y": 5},
                 {"label": "Fn", "matrix": [5, 10], "x": 11, "y": 5},
                 {"label": "Ctrl", "matrix": [3, 14], "x": 12, "y": 5},
-                {"label": "←", "matrix": [5, 13], "x": 13, "y": 5},
-                {"label": "↓", "matrix": [5, 14], "x": 14, "y": 5},
-                {"label": "→", "matrix": [5, 15], "x": 15, "y": 5}
-
+                {"label": "\u2190", "matrix": [5, 13], "x": 13, "y": 5},
+                {"label": "\u2193", "matrix": [5, 14], "x": 14, "y": 5},
+                {"label": "\u2192", "matrix": [5, 15], "x": 15, "y": 5}
             ]
         }
     }
 }
-

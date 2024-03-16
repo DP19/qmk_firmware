@@ -61,7 +61,7 @@ extern uint8_t            side_speed;
 extern uint8_t            side_rgb;
 extern uint8_t            side_colour;
 
-extern bool            f_goto_sleep;
+extern bool f_goto_sleep;
 
 /**
  * @brief  gpio initial.
@@ -421,7 +421,7 @@ void user_set_rgb_color(int index, uint8_t red, uint8_t green, uint8_t blue) {
  *       from older Nuphy leaks.
  */
 void led_power_handle(void) {
-    //sleep handler is setting values we shouldn't check
+    // sleep handler is setting values we shouldn't check
     if (f_goto_sleep) return;
 
     static uint32_t interval = 0;

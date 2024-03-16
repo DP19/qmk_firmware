@@ -86,9 +86,8 @@ void sleep_handle(void) {
         if (user_config.sleep_enable) {
             deep_sleep = 1;
             if (f_force_deep) {
-             // Deep is already set just skip the reset of the else checks
-            }
-            else if (no_act_time < SLEEP_TIME_DELAY) {
+                // Deep is already set just skip the reset of the else checks
+            } else if (no_act_time < SLEEP_TIME_DELAY) {
                 deep_sleep = 0;
             }
             // or if it's in USB mode but USB state is suspended
@@ -113,14 +112,14 @@ void sleep_handle(void) {
     if (f_wakeup_prepare) {
         if (no_act_time < 10) { // activity wake up
             f_wakeup_prepare = 0;
-            f_goto_sleep = 0;
+            f_goto_sleep     = 0;
             exit_light_sleep();
         }
     }
 
     // sleep check, won't reach here on deep sleep.
     if (f_wakeup_prepare) return;
-    
+
     // determine sleep state
     if (dev_info.link_mode == LINK_USB) {
         if (USB_DRIVER.state == USB_SUSPENDED) {
