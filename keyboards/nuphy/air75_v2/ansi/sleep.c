@@ -30,7 +30,9 @@ extern bool            f_goto_sleep;
 extern bool            f_force_deep;
 extern bool            f_wakeup_prepare;
 
+#ifdef NKRO_ENABLE
 extern uint8_t bitkb_report_buf[32];
+#endif // NKRO_ENABLE
 extern uint8_t bytekb_report_buf[8];
 
 void side_rgb_set_color_all(uint8_t r, uint8_t g, uint8_t b);
@@ -47,7 +49,9 @@ void signal_sleep(uint8_t r, uint8_t g, uint8_t b) {
 
 void deep_sleep_handle(void) {
     break_all_key(); // reset keys before sleeping for new QMK lifecycle to handle on wake.
+#ifdef NKRO_ENABLE
     memset(bitkb_report_buf, 0, sizeof(bitkb_report_buf));
+#endif // NKRO_ENABLE
     memset(bytekb_report_buf, 0, sizeof(bytekb_report_buf));
 
     // flash blue when deep sleep is about to happen

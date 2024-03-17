@@ -56,8 +56,8 @@ extern bool               f_rf_new_adv_ok;
 extern report_keyboard_t *keyboard_report;
 #ifdef NKRO_ENABLE
 extern report_nkro_t *nkro_report;
+extern uint8_t        bitkb_report_buf[32];
 #endif // NKRO_ENABLE
-extern uint8_t bitkb_report_buf[32];
 extern uint8_t bytekb_report_buf[8];
 
 extern bool f_goto_sleep;
@@ -213,14 +213,17 @@ void break_all_key(void) {
     keymap_config.nkro = nkro_temp;
 
     if (dev_info.link_mode != LINK_USB) {
+#ifdef NKRO_ENABLE
         memset(report_buf, 0, NKRO_REPORT_BITS + 1);
         uart_send_report(CMD_RPT_BIT_KB, report_buf, 16);
         wait_ms(10);
+#endif // NKRO_ENABLE
         uart_send_report(CMD_RPT_BYTE_KB, report_buf, 8);
         wait_ms(10);
     }
-
+#ifdef NKRO_ENABLE
     memset(bitkb_report_buf, 0, sizeof(bitkb_report_buf));
+#endif // NKRO_ENABLE
     memset(bytekb_report_buf, 0, sizeof(bytekb_report_buf));
 }
 
@@ -382,9 +385,9 @@ void dial_sw_fast_scan(void) {
                 // f_sys_show = 1;
                 default_layer_set(1 << 2);
                 dev_info.sys_sw_state = SYS_SW_WIN;
-                #ifdef NKRO_ENABLE
+#ifdef NKRO_ENABLE
                 keymap_config.nkro = 1;
-                #endif // NKRO_ENABLE
+#endif // NKRO_ENABLE
                 break_all_key();
             }
         }
@@ -467,7 +470,7 @@ void led_power_handle(void) {
 
 void eeconfig_init_kb_datablock(void) {
     // eeprom has been reset by user or flash
-    user_config.side_mode    = DEFAULT_SIDE_MODE; /*SIDE_OFF*/
+    user_config.side_mode    = DEFAULT_SIDE_MODE;  /*SIDE_OFF*/
     user_config.side_light   = DEFAULT_SIDE_LIGHT; /*LIGHT_OFF*/
     user_config.side_speed   = DEFAULT_SIDE_SPEED;
     user_config.side_rgb     = 1;

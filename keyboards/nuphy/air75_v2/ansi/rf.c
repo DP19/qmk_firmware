@@ -37,15 +37,17 @@ bool f_goto_sleep      = 0;
 bool f_force_deep      = 0;
 bool f_wakeup_prepare  = 0;
 
-uint8_t  uart_bit_report_buf[32] = {0};
-uint8_t  func_tab[32]            = {0};
-uint8_t  bitkb_report_buf[32]    = {0};
-uint8_t  bytekb_report_buf[8]    = {0};
-uint16_t conkb_report            = 0;
-uint16_t syskb_report            = 0;
-uint8_t  sync_lost               = 0;
-uint8_t  disconnect_delay        = 0;
-uint32_t uart_rpt_timer          = 0;
+uint8_t uart_bit_report_buf[32] = {0};
+uint8_t func_tab[32]            = {0};
+#ifdef NKRO_ENABLE
+uint8_t bitkb_report_buf[32] = {0};
+#endif // NKRO_ENABLE
+uint8_t  bytekb_report_buf[8] = {0};
+uint16_t conkb_report         = 0;
+uint16_t syskb_report         = 0;
+uint8_t  sync_lost            = 0;
+uint8_t  disconnect_delay     = 0;
+uint32_t uart_rpt_timer       = 0;
 
 uint8_t f_bit_send  = 0;
 uint8_t f_byte_send = 0;
@@ -60,13 +62,13 @@ extern uint16_t        no_act_time;
 extern bool            f_send_channel;
 extern bool            f_dial_sw_init_ok;
 
-void           uart_init(uint32_t baud); // qmk uart.c
-void           uart_send_report(uint8_t report_type, uint8_t *report_buf, uint8_t report_size);
-void           uart_send_bytes(uint8_t *Buffer, uint32_t Length);
-uint8_t        get_checksum(uint8_t *buf, uint8_t len);
-void           uart_receive_pro(void);
-void           break_all_key(void);
-uint16_t       host_last_consumer_usage(void);
+void     uart_init(uint32_t baud); // qmk uart.c
+void     uart_send_report(uint8_t report_type, uint8_t *report_buf, uint8_t report_size);
+void     uart_send_bytes(uint8_t *Buffer, uint32_t Length);
+uint8_t  get_checksum(uint8_t *buf, uint8_t len);
+void     uart_receive_pro(void);
+void     break_all_key(void);
+uint16_t host_last_consumer_usage(void);
 
 /**
  * @brief Get variable uart key send repeat interval.

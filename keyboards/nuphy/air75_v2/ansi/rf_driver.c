@@ -51,18 +51,17 @@ static void rf_send_keyboard(report_keyboard_t *report) {
     uart_send_report_keyboard(report);
 }
 
-
 static void rf_send_nkro(report_nkro_t *report) {
-    #ifdef NKRO_ENABLE
+#ifdef NKRO_ENABLE
     keyboard_protocol = 1;
     uart_send_report_nkro(report);
-    #endif // NKRO_ENABLE
+#endif // NKRO_ENABLE
 }
 
 static void rf_send_mouse(report_mouse_t *report) {
-    #ifdef MOUSEKEY_ENABLE
+#ifdef MOUSEKEY_ENABLE
     uart_send_mouse_report(report);
-    #endif // MOUSEKEY_ENABLE
+#endif // MOUSEKEY_ENABLE
 }
 
 static void rf_send_extra(report_extra_t *report) {
