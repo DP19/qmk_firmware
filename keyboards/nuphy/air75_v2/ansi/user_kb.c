@@ -52,7 +52,9 @@ host_driver_t *m_host_driver         = 0;
 
 extern bool               f_rf_new_adv_ok;
 extern report_keyboard_t *keyboard_report;
+#ifdef NKRO_ENABLE
 extern report_nkro_t     *nkro_report;
+#endif // NKRO_ENABLE
 extern uint8_t            bitkb_report_buf[32];
 extern uint8_t            bytekb_report_buf[8];
 extern uint8_t            side_mode;
@@ -155,7 +157,9 @@ void long_press_key(void) {
                 keymap_config.nkro = 0;
             } else {
                 default_layer_set(1 << 2);
+                #ifdef NKRO_ENABLE
                 keymap_config.nkro = 1;
+                #endif // NKRO_ENABLE
             }
         }
     } else {
@@ -185,11 +189,13 @@ void break_all_key(void) {
     clear_mods();
     clear_keyboard();
 
+    #ifdef NRKO_ENABLE
     // break nkro key
     keymap_config.nkro = 1;
     memset(nkro_report, 0, sizeof(report_nkro_t));
     host_nkro_send(nkro_report);
     wait_ms(10);
+    #endif // NRKO_ENABLE
 
     // break byte key
     keymap_config.nkro = 0;
@@ -294,7 +300,9 @@ void dial_sw_scan(void) {
             f_sys_show = 1;
             default_layer_set(1 << 2);
             dev_info.sys_sw_state = SYS_SW_WIN;
+            #ifdef NKRO_ENABLE
             keymap_config.nkro    = 1;
+            #endif // NKRO_ENABLE
             break_all_key();
         }
     }
@@ -367,7 +375,9 @@ void dial_sw_fast_scan(void) {
                 // f_sys_show = 1;
                 default_layer_set(1 << 2);
                 dev_info.sys_sw_state = SYS_SW_WIN;
+                #ifdef NKRO_ENABLE
                 keymap_config.nkro    = 1;
+                #endif
                 break_all_key();
             }
         }

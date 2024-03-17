@@ -2,7 +2,7 @@
     "manufacturer": "NuPhy",
     "keyboard_name": "NuPhy Air75 V2",
     "bootloader": "stm32-dfu",
-    "debounce": 2,
+    "debounce": 3,
     "diode_direction": "COL2ROW",
     "dynamic_keymap": {
         "layer_count": 8,

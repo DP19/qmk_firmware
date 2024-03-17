@@ -86,10 +86,12 @@ static uint8_t get_repeat_interval(void) {
     return 25;
 }
 
+
+bool        f_bit_kb_act = 0;
+#ifdef NKRO_ENABLE
 /**
  * @brief Uart auto nkey send
  */
-bool        f_bit_kb_act = 0;
 static void uart_auto_nkey_send(uint8_t *pre_bit_report, uint8_t *now_bit_report, uint8_t size) {
     uint8_t i, j, byte_index;
     uint8_t change_mask, offset_mask;
@@ -148,6 +150,7 @@ static void uart_auto_nkey_send(uint8_t *pre_bit_report, uint8_t *now_bit_report
         uart_send_report(CMD_RPT_BYTE_KB, bytekb_report_buf, 8);
     }
 }
+#endif // NKRO_ENABLE
 
 /**
  * @brief  Uart send keys report.
@@ -216,6 +219,7 @@ void uart_send_report_keyboard(report_keyboard_t *report) {
     memcpy(bytekb_report_buf, &report->mods, 8);
 }
 
+#ifdef NKRO_ENABLE
 /**
  * @brief  Uart send bit keys report.
  * @note Call in rf_driver.c
@@ -225,6 +229,7 @@ void uart_send_report_nkro(report_nkro_t *report) {
     uart_auto_nkey_send(bitkb_report_buf, &nkro_report->mods, NKRO_REPORT_BITS + 1);
     memcpy(&bitkb_report_buf[0], &nkro_report->mods, NKRO_REPORT_BITS + 1);
 }
+#endif // NKRO_ENABLE
 
 /**
  * @brief  Parsing the data received from the RF module.
