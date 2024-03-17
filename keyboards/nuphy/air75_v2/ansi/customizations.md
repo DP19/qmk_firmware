@@ -11,7 +11,7 @@ The F row represents the 10s percentage and number row the ones. Example, 35% wi
 - Side indicators will flash blue for 0.3s when board enters deep sleep.
 - Bluetooth connection indicators will be lit blue when establishing connection. This lights the corresponding
 BT mode key. No indicator for RF.
-- Default side led pattern set to off and zero brightness. The side light pins will not have power in this state. Saving on battery
+- RGB will be disabled when brightness is 0 for both side lights and keyboard lights. Default is on for both
 - 3ms debounce instead of 2ms (potential stability)
 
 ### Sleep Mode (inspired by @adi4086 3 mode sleep)
@@ -42,5 +42,6 @@ The standard `via` keymap enables all rgb animations and keyboard features. I us
 
 - Default RGB set to `Reactive Simple` and Gradient mode is turned on for all `Reactive` effects. This changes the rgb color in a gradient scale with each keypress. 
   - All but two RGB affects are in this keymap, Reactive simple and solid which I use for testing.
+- Side lights are set to SIDE_OFF and brightness 0 to disable them by default
 - Disabled Keylock, Mousekey, and N key rollover (NKRO). Since I use Mac which doeesn't support NKRO I've added options in the code to not include extra functions since they won't ever be called. This reduces the firmware size
 - Added RF_DFU key to `Fn + M + {` binding to easily get RF module into DFU mode for flashing. Must be in USB mode and hold key unti it appears in RF Connect app.
