@@ -30,7 +30,7 @@ extern bool            f_goto_sleep;
 extern bool            f_force_deep;
 extern bool            f_wakeup_prepare;
 
-extern uint8_t bitkb_report_buf[16];
+extern uint8_t bitkb_report_buf[32];
 extern uint8_t bytekb_report_buf[8];
 
 void side_rgb_set_color_all(uint8_t r, uint8_t g, uint8_t b);

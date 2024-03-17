@@ -57,7 +57,7 @@ extern report_keyboard_t *keyboard_report;
 #ifdef NKRO_ENABLE
 extern report_nkro_t *nkro_report;
 #endif // NKRO_ENABLE
-extern uint8_t bitkb_report_buf[16];
+extern uint8_t bitkb_report_buf[32];
 extern uint8_t bytekb_report_buf[8];
 
 extern bool f_goto_sleep;
