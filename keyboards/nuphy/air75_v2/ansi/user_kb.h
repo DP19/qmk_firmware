@@ -105,6 +105,7 @@ typedef enum {
 
 #define RF_LONG_PRESS_DELAY     30
 #define DEV_RESET_PRESS_DELAY   30
+#define RF_DFU_PRESS_DELAY      30
 #define RGB_TEST_PRESS_DELAY    30
 
 typedef struct
@@ -132,16 +133,15 @@ typedef struct
 
 typedef struct
 {
-    uint8_t default_brightness_flag;
-    uint8_t ee_side_mode;
-    uint8_t ee_side_light;
-    uint8_t ee_side_speed;
-    uint8_t ee_side_rgb;
-    uint8_t ee_side_colour;
-    uint8_t sleep_enable;
-    uint8_t retain1;
-    uint8_t retain2;
+    uint8_t side_mode;
+    uint8_t side_light;
+    uint8_t side_speed;
+    uint8_t side_rgb;
+    uint8_t side_colour;
+    bool sleep_enable :1;
 } user_config_t;
+
+_Static_assert(sizeof(user_config_t) == EECONFIG_KB_DATA_SIZE, "Mismatch in keyboard EECONFIG stored data");
 
 extern uint16_t           side_led_last_act;
 extern uint8_t            rf_blink_cnt;
@@ -154,8 +154,8 @@ void    uart_receive_pro(void);
 void    uart_send_report(uint8_t report_type, uint8_t *report_buf, uint8_t report_size);
 void    side_speed_control(uint8_t dir);
 void    side_light_control(uint8_t dir);
-void    side_colour_control(uint8_t dir);
-void    side_mode_control(uint8_t dir);
+void    side_colour_control(void);
+void    side_mode_control(void);
 void    side_led_show(void);
 void    sleep_handle(void);
 void    bat_led_close(void);
@@ -170,5 +170,4 @@ void    dial_sw_fast_scan(void);
 void    timer_pro(void);
 void    led_power_handle(void);
 void    user_set_rgb_color(int index, uint8_t red, uint8_t green, uint8_t blue);
-void    londing_eeprom_data(void);
 uint8_t uart_send_cmd(uint8_t cmd, uint8_t ack_cnt, uint8_t delayms);

@@ -60,7 +60,6 @@ extern uint16_t        no_act_time;
 extern bool            f_send_channel;
 extern bool            f_dial_sw_init_ok;
 
-report_mouse_t mousekey_get_report(void);
 void           uart_init(uint32_t baud); // qmk uart.c
 void           uart_send_report(uint8_t report_type, uint8_t *report_buf, uint8_t report_size);
 void           uart_send_bytes(uint8_t *Buffer, uint32_t Length);
@@ -86,8 +85,6 @@ static uint8_t get_repeat_interval(void) {
     return 25;
 }
 
-
-bool        f_bit_kb_act = 0;
 #ifdef NKRO_ENABLE
 /**
  * @brief Uart auto nkey send
@@ -142,7 +139,6 @@ static void uart_auto_nkey_send(uint8_t *pre_bit_report, uint8_t *now_bit_report
     }
 
     if (f_bit_send) {
-        f_bit_kb_act = 1;
         uart_send_report(CMD_RPT_BIT_KB, uart_bit_report_buf, 16);
     }
 
@@ -189,6 +185,7 @@ void uart_send_consumer_report(report_extra_t *report) {
     uart_send_report(CMD_RPT_CONSUME, (uint8_t *)(&report->usage), 2);
 }
 
+#ifdef MOUSEKEY_ENABLE
 /**
  * @brief  Uart send mouse keys report.
  * @note Call in rf_driver.c
@@ -197,6 +194,7 @@ void uart_send_mouse_report(report_mouse_t *report) {
     no_act_time = 0;
     uart_send_report(CMD_RPT_MS, &report->buttons, 5);
 }
+#endif // MOUSEKEY_ENABLE
 
 /**
  * @brief  Uart send system keys report.

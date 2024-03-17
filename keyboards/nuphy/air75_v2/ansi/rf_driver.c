@@ -33,8 +33,12 @@ host_driver_t  rf_host_driver = {rf_keyboard_leds, rf_send_keyboard, rf_send_nkr
 
 /* defined in rf.c */
 extern void uart_send_report_keyboard(report_keyboard_t *report);
+#ifdef NKRO_ENABLE
 extern void uart_send_report_nkro(report_nkro_t *report);
+#endif // NKRO_ENABLE
+#ifdef MOUSEKEY_ENABLE
 extern void uart_send_mouse_report(report_mouse_t *report);
+#endif // MOUSEKEY_ENABLE
 extern void uart_send_consumer_report(report_extra_t *report);
 extern void uart_send_system_report(report_extra_t *report);
 
@@ -47,17 +51,18 @@ static void rf_send_keyboard(report_keyboard_t *report) {
     uart_send_report_keyboard(report);
 }
 
-#ifdef NKRO_ENABLE
+
 static void rf_send_nkro(report_nkro_t *report) {
+    #ifdef NKRO_ENABLE
     keyboard_protocol = 1;
     uart_send_report_nkro(report);
+    #endif // NKRO_ENABLE
 }
-#else
-static void rf_send_nkro(report_nkro_t *report) {}
-#endif //NKRO_ENABLE
 
 static void rf_send_mouse(report_mouse_t *report) {
+    #ifdef MOUSEKEY_ENABLE
     uart_send_mouse_report(report);
+    #endif // MOUSEKEY_ENABLE
 }
 
 static void rf_send_extra(report_extra_t *report) {

@@ -135,15 +135,15 @@ void side_rgb_refresh(void) {
  */
 void side_light_control(uint8_t dir) {
     if (dir) {
-        if (user_config.ee_side_light > SIDE_BRIGHT_MAX) {
+        if (user_config.side_light > SIDE_BRIGHT_MAX) {
             return;
         } else
-            user_config.ee_side_light++;
+            user_config.side_light++;
     } else {
-        if (user_config.ee_side_light == 0) {
+        if (user_config.side_light == 0) {
             return;
         } else
-            user_config.ee_side_light--;
+            user_config.side_light--;
     }
     eeconfig_update_kb_datablock(&user_config);
 }
@@ -155,52 +155,38 @@ void side_light_control(uint8_t dir) {
  */
 void side_speed_control(uint8_t dir) {
     if (dir) {
-        if (user_config.ee_side_speed == 0) {
+        if (user_config.side_speed == 0) {
             return;
         }
-        user_config.ee_side_speed--;
+        user_config.side_speed--;
     } else {
-        if (user_config.ee_side_speed == SIDE_SPEED_MAX) {
+        if (user_config.side_speed == SIDE_SPEED_MAX) {
             return;
         }
-        user_config.ee_side_speed++;
+        user_config.side_speed++;
     }
     eeconfig_update_kb_datablock(&user_config);
 }
 
 /**
  * @brief  Switch to the next color of side lights.
- * @param  dir: 0 - prev, 1 - next.
  * @note  save to eeprom.
  */
-void side_colour_control(uint8_t dir) {
-    if (user_config.ee_side_mode != SIDE_WAVE) {
-        if (user_config.ee_side_rgb) {
-            user_config.ee_side_rgb    = 0;
-            user_config.ee_side_colour = 0;
+void side_colour_control(void) {
+    if (user_config.side_mode != SIDE_WAVE) {
+        if (user_config.side_rgb) {
+            user_config.side_rgb    = 0;
+            user_config.side_colour = 0;
         }
     }
-    if (dir) {
-        if (user_config.ee_side_rgb) {
-            user_config.ee_side_rgb    = 0;
-            user_config.ee_side_colour = 0;
-        } else {
-            user_config.ee_side_colour++;
-            if (user_config.ee_side_colour >= SIDE_COLOUR_MAX) {
-                user_config.ee_side_rgb    = 1;
-                user_config.ee_side_colour = 0;
-            }
-        }
+    if (user_config.side_rgb) {
+        user_config.side_rgb    = 0;
+        user_config.side_colour = 0;
     } else {
-        if (user_config.ee_side_rgb) {
-            user_config.ee_side_rgb    = 0;
-            user_config.ee_side_colour = SIDE_COLOUR_MAX - 1;
-        } else {
-            user_config.ee_side_colour--;
-            if (user_config.ee_side_colour >= SIDE_COLOUR_MAX) {
-                user_config.ee_side_rgb    = 1;
-                user_config.ee_side_colour = 0;
-            }
+        user_config.side_colour++;
+        if (user_config.side_colour >= SIDE_COLOUR_MAX) {
+            user_config.side_rgb    = 1;
+            user_config.side_colour = 0;
         }
     }
     eeconfig_update_kb_datablock(&user_config);
@@ -208,21 +194,12 @@ void side_colour_control(uint8_t dir) {
 
 /**
  * @brief  Change the color mode of side lights.
- * @param  dir: 0 - prev, 1 - next.
  * @note  save to eeprom.
  */
-void side_mode_control(uint8_t dir) {
-    if (dir) {
-        user_config.ee_side_mode++;
-        if (user_config.ee_side_mode > SIDE_OFF) {
-            user_config.ee_side_mode = 0;
-        }
-    } else {
-        if (user_config.ee_side_mode > 0) {
-            user_config.ee_side_mode--;
-        } else {
-            user_config.ee_side_mode = SIDE_OFF;
-        }
+void side_mode_control(void) {
+    user_config.side_mode++;
+    if (user_config.side_mode > SIDE_OFF) {
+        user_config.side_mode = 0;
     }
     side_play_point = 0;
     eeconfig_update_kb_datablock(&user_config);
@@ -384,29 +361,29 @@ static void count_rgb_light(uint8_t light_temp) {
 static void side_wave_mode_show(void) {
     uint8_t play_index;
 
-    if (user_config.ee_side_rgb)
+    if (user_config.side_rgb)
         light_point_playing(0, 3, FLOW_COLOUR_TAB_LEN, &side_play_point);
     else
         light_point_playing(0, 2, WAVE_TAB_LEN, &side_play_point);
 
     play_index = side_play_point;
     for (int i = 0; i < SIDE_LINE; i++) {
-        if (user_config.ee_side_rgb) {
+        if (user_config.side_rgb) {
             r_temp = flow_rainbow_colour_tab[play_index][0];
             g_temp = flow_rainbow_colour_tab[play_index][1];
             b_temp = flow_rainbow_colour_tab[play_index][2];
 
             light_point_playing(1, 24, FLOW_COLOUR_TAB_LEN, &play_index);
         } else {
-            r_temp = colour_lib[user_config.ee_side_colour][0];
-            g_temp = colour_lib[user_config.ee_side_colour][1];
-            b_temp = colour_lib[user_config.ee_side_colour][2];
+            r_temp = colour_lib[user_config.side_colour][0];
+            g_temp = colour_lib[user_config.side_colour][1];
+            b_temp = colour_lib[user_config.side_colour][2];
 
             light_point_playing(1, 12, WAVE_TAB_LEN, &play_index);
             count_rgb_light(wave_data_tab[play_index]);
         }
 
-        count_rgb_light(side_light_table[user_config.ee_side_light]);
+        count_rgb_light(side_light_table[user_config.side_light]);
 
         for (int j = 0; j < 2; j++) {
             side_rgb_set_color(side_led_index_tab[i][j], r_temp >> 2, g_temp >> 2, b_temp >> 2);
@@ -424,7 +401,7 @@ static void side_spectrum_mode_show(void) {
     g_temp = flow_rainbow_colour_tab[side_play_point][1];
     b_temp = flow_rainbow_colour_tab[side_play_point][2];
 
-    count_rgb_light(side_light_table[user_config.ee_side_light]);
+    count_rgb_light(side_light_table[user_config.side_light]);
 
     side_rgb_set_color_all(r_temp, g_temp, b_temp);
 }
@@ -438,12 +415,12 @@ static void side_breathe_mode_show(void) {
     light_point_playing(trend, 1, BREATHE_TAB_LEN, &play_point);
     trend = breath_tab_trend(trend, play_point);
 
-    r_temp = colour_lib[user_config.ee_side_colour][0];
-    g_temp = colour_lib[user_config.ee_side_colour][1];
-    b_temp = colour_lib[user_config.ee_side_colour][2];
+    r_temp = colour_lib[user_config.side_colour][0];
+    g_temp = colour_lib[user_config.side_colour][1];
+    b_temp = colour_lib[user_config.side_colour][2];
 
     count_rgb_light(breathe_data_tab[play_point]);
-    count_rgb_light(side_light_table[user_config.ee_side_light]);
+    count_rgb_light(side_light_table[user_config.side_light]);
 
     side_rgb_set_color_all(r_temp, g_temp, b_temp);
 }
@@ -454,11 +431,11 @@ static void side_breathe_mode_show(void) {
 static void side_static_mode_show(void) {
     if (side_play_point >= SIDE_COLOUR_MAX) side_play_point = 0;
 
-    r_temp = colour_lib[user_config.ee_side_colour][0];
-    g_temp = colour_lib[user_config.ee_side_colour][1];
-    b_temp = colour_lib[user_config.ee_side_colour][2];
+    r_temp = colour_lib[user_config.side_colour][0];
+    g_temp = colour_lib[user_config.side_colour][1];
+    b_temp = colour_lib[user_config.side_colour][2];
 
-    count_rgb_light(side_light_table[user_config.ee_side_light]);
+    count_rgb_light(side_light_table[user_config.side_light]);
 
     side_rgb_set_color_all(r_temp, g_temp, b_temp);
 }
@@ -715,15 +692,6 @@ void device_reset_init(void) {
     rgb_matrix_mode(RGB_MATRIX_DEFAULT_MODE);
     rgb_matrix_set_speed(255);
     rgb_matrix_sethsv(255, 255, RGB_MATRIX_MAXIMUM_BRIGHTNESS);
-
-    user_config.default_brightness_flag = 0xA5;
-    user_config.ee_side_mode            = SIDE_OFF;
-    user_config.ee_side_light           = 0;
-    user_config.ee_side_speed           = 2;
-    user_config.ee_side_rgb             = 1;
-    user_config.ee_side_colour          = 0;
-    user_config.sleep_enable            = true;
-    eeconfig_update_kb_datablock(&user_config);
 }
 
 /**
@@ -795,11 +763,11 @@ void side_led_show(void) {
     static uint32_t side_update_time  = 0;
     static bool     do_refresh        = false;
 
-    uint8_t update_interval = side_speed_table[user_config.ee_side_mode][user_config.ee_side_speed];
+    uint8_t update_interval = side_speed_table[user_config.side_mode][user_config.side_speed];
     if (timer_elapsed32(side_update_time) >= update_interval) {
         side_update_time = timer_read32();
         do_refresh       = true;
-        switch (user_config.ee_side_mode) {
+        switch (user_config.side_mode) {
             case SIDE_WAVE:
                 side_wave_mode_show();
                 break;

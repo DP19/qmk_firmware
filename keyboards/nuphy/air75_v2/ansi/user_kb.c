@@ -34,6 +34,7 @@ bool f_send_channel    = 0;
 bool f_dial_sw_init_ok = 0;
 bool f_rf_sw_press     = 0;
 bool f_dev_reset_press = 0;
+bool f_rf_dfu_press    = 0;
 bool f_rgb_test_press  = 0;
 bool f_bat_num_show    = 0;
 
@@ -44,6 +45,7 @@ uint16_t       rf_linking_time       = 0;
 uint16_t       rf_link_show_time     = 0;
 uint16_t       no_act_time           = 0;
 uint16_t       dev_reset_press_delay = 0;
+uint16_t       rf_dfu_press_delay    = 0;
 uint16_t       rf_sw_press_delay     = 0;
 uint16_t       rgb_test_press_delay  = 0;
 uint16_t       side_led_last_act     = 0;
@@ -53,15 +55,15 @@ host_driver_t *m_host_driver         = 0;
 extern bool               f_rf_new_adv_ok;
 extern report_keyboard_t *keyboard_report;
 #ifdef NKRO_ENABLE
-extern report_nkro_t     *nkro_report;
+extern report_nkro_t *nkro_report;
 #endif // NKRO_ENABLE
-extern uint8_t            bitkb_report_buf[32];
-extern uint8_t            bytekb_report_buf[8];
-extern uint8_t            side_mode;
-extern uint8_t            side_light;
-extern uint8_t            side_speed;
-extern uint8_t            side_rgb;
-extern uint8_t            side_colour;
+extern uint8_t bitkb_report_buf[32];
+extern uint8_t bytekb_report_buf[8];
+extern uint8_t side_mode;
+extern uint8_t side_light;
+extern uint8_t side_speed;
+extern uint8_t side_rgb;
+extern uint8_t side_colour;
 
 extern bool f_goto_sleep;
 
@@ -157,13 +159,23 @@ void long_press_key(void) {
                 keymap_config.nkro = 0;
             } else {
                 default_layer_set(1 << 2);
-                #ifdef NKRO_ENABLE
+#ifdef NKRO_ENABLE
                 keymap_config.nkro = 1;
-                #endif // NKRO_ENABLE
+#endif // NKRO_ENABLE
             }
         }
     } else {
         dev_reset_press_delay = 0;
+    }
+
+    if (f_rf_dfu_press) {
+        rf_dfu_press_delay++;
+        if (rf_dfu_press_delay >= RF_DFU_PRESS_DELAY) {
+            f_rf_dfu_press = 0;
+            uart_send_cmd(CMD_RF_DFU, 10, 20);
+        }
+    } else {
+        rf_dfu_press_delay = 0;
     }
 
     // Enter the RGB test mode
@@ -189,13 +201,13 @@ void break_all_key(void) {
     clear_mods();
     clear_keyboard();
 
-    #ifdef NRKO_ENABLE
+#ifdef NRKO_ENABLE
     // break nkro key
     keymap_config.nkro = 1;
     memset(nkro_report, 0, sizeof(report_nkro_t));
     host_nkro_send(nkro_report);
     wait_ms(10);
-    #endif // NRKO_ENABLE
+#endif // NRKO_ENABLE
 
     // break byte key
     keymap_config.nkro = 0;
@@ -300,9 +312,9 @@ void dial_sw_scan(void) {
             f_sys_show = 1;
             default_layer_set(1 << 2);
             dev_info.sys_sw_state = SYS_SW_WIN;
-            #ifdef NKRO_ENABLE
-            keymap_config.nkro    = 1;
-            #endif // NKRO_ENABLE
+#ifdef NKRO_ENABLE
+            keymap_config.nkro = 1;
+#endif // NKRO_ENABLE
             break_all_key();
         }
     }
@@ -376,8 +388,8 @@ void dial_sw_fast_scan(void) {
                 default_layer_set(1 << 2);
                 dev_info.sys_sw_state = SYS_SW_WIN;
                 #ifdef NKRO_ENABLE
-                keymap_config.nkro    = 1;
-                #endif
+                keymap_config.nkro = 1;
+                #endif // NKRO_ENABLE
                 break_all_key();
             }
         }
@@ -450,7 +462,7 @@ void led_power_handle(void) {
     }
 
     if (side_led_last_act > 100) { // 10ms intervals
-        if (user_config.ee_side_light == 0) {
+        if (user_config.side_light == 0) {
             pwr_side_led_off();
         } else {
             pwr_side_led_on();
@@ -458,22 +470,13 @@ void led_power_handle(void) {
     }
 }
 
-/**
- * @brief  londing eeprom data.
- */
-void londing_eeprom_data(void) {
-    eeconfig_read_kb_datablock(&user_config);
-    if (user_config.default_brightness_flag != 0xA5) {
-        /* first power on, set rgb matrix brightness at middle level*/
-        rgb_matrix_sethsv(255, 255, RGB_MATRIX_MAXIMUM_BRIGHTNESS);
-        rgb_matrix_set_speed(255);
-        user_config.default_brightness_flag = 0xA5;
-        user_config.ee_side_mode            = 4; /*SIDE_OFF*/
-        user_config.ee_side_light           = 0;
-        user_config.ee_side_speed           = 2;
-        user_config.ee_side_rgb             = 1;
-        user_config.ee_side_colour          = 0;
-        user_config.sleep_enable            = true;
-        eeconfig_update_kb_datablock(&user_config);
-    }
+void eeconfig_init_kb_datablock(void) {
+    // eeprom has been reset by user or flash
+    user_config.side_mode    = 4; /*SIDE_OFF*/
+    user_config.side_light   = 0; /*LIGHT_OFF*/
+    user_config.side_speed   = 2;
+    user_config.side_rgb     = 1;
+    user_config.side_colour  = 0;
+    user_config.sleep_enable = true;
+    eeconfig_update_kb_datablock(&user_config);
 }

@@ -22,6 +22,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 extern bool            f_rf_sw_press;
 extern bool            f_sleep_show;
 extern bool            f_dev_reset_press;
+extern bool            f_rf_dfu_press;
 extern bool            f_bat_num_show;
 extern bool            f_rgb_test_press;
 extern bool            f_bat_hold;
@@ -46,7 +47,10 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
         case RF_DFU:
             if (record->event.pressed) {
                 if (dev_info.link_mode != LINK_USB) return false;
-                uart_send_cmd(CMD_RF_DFU, 10, 20);
+                f_rf_dfu_press = 1;
+                break_all_key();
+            } else {
+                f_rf_dfu_press = 0;
             }
             return false;
 
@@ -165,13 +169,13 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 
         case SIDE_MOD:
             if (record->event.pressed) {
-                side_mode_control(1);
+                side_mode_control();
             }
             return false;
 
         case SIDE_HUI:
             if (record->event.pressed) {
-                side_colour_control(1);
+                side_colour_control();
             }
             return false;
 
@@ -254,7 +258,7 @@ void keyboard_post_init_kb(void) {
 
     break_all_key();
     dial_sw_fast_scan();
-    londing_eeprom_data();
+    eeconfig_read_kb_datablock(&user_config);
     keyboard_post_init_user();
 }
 
