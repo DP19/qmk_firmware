@@ -41,6 +41,6 @@ If you use the 2.4 RF receiver, when it's disconnected from your computer the bo
 The standard `via` keymap enables all rgb animations and keyboard features. I use the builds of my `DP19` keymap which has the following customizations. You can build on top of this firmware by copying the folder and making your own customizations to those files. See QMK docs for more
 
 - Default RGB set to `Reactive Simple` and Gradient mode is turned on for all `Reactive` effects. This changes the rgb color in a gradient scale with each keypress. 
-  - All but two RGB affects are in this keymap, Reactive simple and gradient_left_right which I use for testing.
+  - All but two RGB affects are in this keymap, Reactive simple and solid which I use for testing.
 - Disabled Keylock, Mousekey, and N key rollover (NKRO). Since I use Mac which doeesn't support NKRO I've added options in the code to not include extra functions since they won't ever be called. This reduces the firmware size
 - Added RF_DFU key to `Fn + M + {` binding to easily get RF module into DFU mode for flashing. Must be in USB mode and hold key unti it appears in RF Connect app.
