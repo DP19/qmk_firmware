@@ -59,11 +59,6 @@ extern report_nkro_t *nkro_report;
 #endif // NKRO_ENABLE
 extern uint8_t bitkb_report_buf[32];
 extern uint8_t bytekb_report_buf[8];
-extern uint8_t side_mode;
-extern uint8_t side_light;
-extern uint8_t side_speed;
-extern uint8_t side_rgb;
-extern uint8_t side_colour;
 
 extern bool f_goto_sleep;
 

@@ -691,7 +691,7 @@ void device_reset_init(void) {
     rgb_matrix_enable();
     rgb_matrix_mode(RGB_MATRIX_DEFAULT_MODE);
     rgb_matrix_set_speed(255);
-    rgb_matrix_sethsv(255, 255, RGB_MATRIX_MAXIMUM_BRIGHTNESS);
+    rgb_matrix_sethsv(255, 255, RGB_MATRIX_DEFAULT_VAL);
 }
 
 /**
