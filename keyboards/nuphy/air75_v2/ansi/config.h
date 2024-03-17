@@ -34,3 +34,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define SD1_RX_PAL_MODE                     0
 
 #define EECONFIG_KB_DATA_SIZE             6
+
+
+#define DEFAULT_SIDE_MODE      0
+#define DEFAULT_SIDE_LIGHT     3
+#define DEFAULT_SIDE_SPEED     2

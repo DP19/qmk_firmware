@@ -57,7 +57,7 @@ extern report_keyboard_t *keyboard_report;
 #ifdef NKRO_ENABLE
 extern report_nkro_t *nkro_report;
 #endif // NKRO_ENABLE
-extern uint8_t bitkb_report_buf[32];
+extern uint8_t bitkb_report_buf[16];
 extern uint8_t bytekb_report_buf[8];
 
 extern bool f_goto_sleep;
@@ -467,9 +467,9 @@ void led_power_handle(void) {
 
 void eeconfig_init_kb_datablock(void) {
     // eeprom has been reset by user or flash
-    user_config.side_mode    = 4; /*SIDE_OFF*/
-    user_config.side_light   = 0; /*LIGHT_OFF*/
-    user_config.side_speed   = 2;
+    user_config.side_mode    = DEFAULT_SIDE_MODE; /*SIDE_OFF*/
+    user_config.side_light   = DEFAULT_SIDE_LIGHT; /*LIGHT_OFF*/
+    user_config.side_speed   = DEFAULT_SIDE_SPEED;
     user_config.side_rgb     = 1;
     user_config.side_colour  = 0;
     user_config.sleep_enable = true;

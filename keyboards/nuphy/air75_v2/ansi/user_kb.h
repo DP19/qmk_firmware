@@ -108,6 +108,7 @@ typedef enum {
 #define RF_DFU_PRESS_DELAY      30
 #define RGB_TEST_PRESS_DELAY    30
 
+
 typedef struct
 {
     uint8_t RXDState;

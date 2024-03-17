@@ -3,6 +3,13 @@
 #define RGB_MATRIX_DEFAULT_SPD 255
 #define RGB_MATRIX_DEFAULT_VAL 128
 
+// Set Side Mode to Off and Light to 0 to disable
+#undef  DEFAULT_SIDE_MODE
+#define DEFAULT_SIDE_MODE      4
+
+#undef  DEFAULT_SIDE_LIGHT
+#define DEFAULT_SIDE_LIGHT     0
+
 //Disable Other Animations
 #undef ENABLE_RGB_MATRIX_ALPHAS_MODS
 #undef ENABLE_RGB_MATRIX_GRADIENT_UP_DOWN
