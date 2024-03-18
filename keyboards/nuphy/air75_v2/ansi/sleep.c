@@ -48,12 +48,6 @@ void signal_sleep(uint8_t r, uint8_t g, uint8_t b) {
 }
 
 void deep_sleep_handle(void) {
-    break_all_key(); // reset keys before sleeping for new QMK lifecycle to handle on wake.
-#ifdef NKRO_ENABLE
-    memset(bitkb_report_buf, 0, sizeof(bitkb_report_buf));
-#endif // NKRO_ENABLE
-    memset(bytekb_report_buf, 0, sizeof(bytekb_report_buf));
-
     // flash blue when deep sleep is about to happen
     signal_sleep(0x00, 0x00, 0x99);
 
