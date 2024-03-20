@@ -19,7 +19,7 @@ uint8_t uart_send_cmd(uint8_t cmd, uint8_t ack_cnt, uint8_t delayms);
 void Sleep_Handle(void) {
     static uint32_t delay_step_timer = 0;
     static uint8_t  usb_suspend_debounce;
-    static bool f_usb_sleep = 0;
+    static bool     f_usb_sleep = 0;
 
     /* 50ms interval */
     if (timer_elapsed32(delay_step_timer) < 50) return;
@@ -33,31 +33,31 @@ void Sleep_Handle(void) {
         else
             uart_send_cmd(CMD_SLEEP, 5, 5);
 
-        setPinOutput(DC_BOOST_PIN);
-        writePinLow(DC_BOOST_PIN);
+        gpio_set_pin_output(DC_BOOST_PIN);
+        gpio_write_pin_low(DC_BOOST_PIN);
 
-        setPinInput(DRIVER_LED_CS_PIN);
-        setPinInput(DRIVER_SIDE_CS_PIN);
+        gpio_set_pin_input(DRIVER_LED_CS_PIN);
+        gpio_set_pin_input(DRIVER_SIDE_CS_PIN);
 
         f_wakeup_prepare = 1;
-    } else if(f_usb_sleep) {
-        setPinInput(DRIVER_LED_CS_PIN);
-        setPinInput(DRIVER_SIDE_CS_PIN); 
+    } else if (f_usb_sleep) {
+        gpio_set_pin_input(DRIVER_LED_CS_PIN);
+        gpio_set_pin_input(DRIVER_SIDE_CS_PIN);
     } else {
-        setPinOutput(DRIVER_LED_CS_PIN);
-        writePinLow(DRIVER_LED_CS_PIN);
-        setPinOutput(DRIVER_SIDE_CS_PIN);
-        writePinLow(DRIVER_SIDE_CS_PIN);        
+        gpio_set_pin_output(DRIVER_LED_CS_PIN);
+        gpio_write_pin_low(DRIVER_LED_CS_PIN);
+        gpio_set_pin_output(DRIVER_SIDE_CS_PIN);
+        gpio_write_pin_low(DRIVER_SIDE_CS_PIN);
     }
 
     if (f_wakeup_prepare && (no_act_time < 10)) {
         f_wakeup_prepare = 0;
-        writePinHigh(DC_BOOST_PIN);
+        gpio_write_pin_high(DC_BOOST_PIN);
 
-        setPinOutput(DRIVER_LED_CS_PIN);
-        writePinLow(DRIVER_LED_CS_PIN);
-        setPinOutput(DRIVER_SIDE_CS_PIN);
-        writePinLow(DRIVER_SIDE_CS_PIN);
+        gpio_set_pin_output(DRIVER_LED_CS_PIN);
+        gpio_write_pin_low(DRIVER_LED_CS_PIN);
+        gpio_set_pin_output(DRIVER_SIDE_CS_PIN);
+        gpio_write_pin_low(DRIVER_SIDE_CS_PIN);
 
         uart_send_cmd(CMD_HAND, 0, 1);
 
@@ -78,11 +78,11 @@ void Sleep_Handle(void) {
         } else {
             usb_suspend_debounce = 0;
 
-        if (no_act_time >= SLEEP_TIME_DELAY) {
-            f_usb_sleep = 1;
-        } else {
-            f_usb_sleep = 0;
-        }
+            if (no_act_time >= SLEEP_TIME_DELAY) {
+                f_usb_sleep = 1;
+            } else {
+                f_usb_sleep = 0;
+            }
         }
     } else {
         f_usb_sleep = 0;
@@ -93,8 +93,6 @@ void Sleep_Handle(void) {
         } else if (rf_linking_time >= LINK_TIMEOUT) {
             rf_linking_time = 0;
             f_goto_sleep    = 1;
-        }        
+        }
     }
-    
-
 }

@@ -4,20 +4,18 @@
 #include QMK_KEYBOARD_H
 #include "ansi.h"
 #include "usb_main.h"
+#include "rf_driver.h"
 
-
-
-#define RF_LONG_PRESS_DELAY   30
+#define RF_LONG_PRESS_DELAY 30
 #define DEV_RESET_PRESS_DELAY 30
-#define RGB_TEST_PRESS_DELAY  30
+#define RGB_TEST_PRESS_DELAY 30
 
 user_config_t user_config;
 
-DEV_INFO_STRUCT dev_info =
-    {
-        .rf_baterry = 100,
-        .link_mode  = LINK_USB,
-        .rf_state   = RF_IDLE,
+DEV_INFO_STRUCT dev_info = {
+    .rf_baterry = 100,
+    .link_mode  = LINK_USB,
+    .rf_state   = RF_IDLE,
 };
 
 uint16_t       rf_linking_time       = 0;
@@ -41,46 +39,46 @@ extern uint8_t logo_light;
 extern uint8_t logo_speed;
 extern uint8_t logo_rgb;
 extern uint8_t logo_colour;
+extern report_keyboard_t *keyboard_report;
 extern uint8_t uart_bit_report_buf[32];
 extern uint8_t bitkb_report_buf[32];
 extern uint8_t bytekb_report_buf[8];
 
-bool f_goto_sleep       = 0;
-bool f_bat_show         = 0;
-bool f_bat_hold         = 0;
-bool f_chg_show         = 1;
-bool f_sys_show         = 0;
-bool f_sleep_show       = 0;
-bool f_func_save        = 0;
-bool f_rf_read_data_ok  = 0;
-bool f_rf_sts_sysc_ok   = 0;
-bool f_rf_new_adv_ok    = 0;
-bool f_rf_reset         = 0;
-bool f_send_channel     = 0;
-bool f_rf_send_bitkb    = 0;
-bool f_rf_send_byte     = 0;
-bool f_rf_send_consume  = 0;
-bool f_dial_sw_init_ok  = 0;
-bool f_rf_sw_press      = 0;
-bool f_dev_reset_press  = 0;
-bool f_rgb_test_press   = 0;
-bool f_win_lock         = 0;
-bool f_uart_ack         = 0;
-bool f_rf_hand_ok       = 0;
+bool f_goto_sleep      = 0;
+bool f_bat_show        = 0;
+bool f_bat_hold        = 0;
+bool f_chg_show        = 1;
+bool f_sys_show        = 0;
+bool f_sleep_show      = 0;
+bool f_func_save       = 0;
+bool f_rf_read_data_ok = 0;
+bool f_rf_sts_sysc_ok  = 0;
+bool f_rf_new_adv_ok   = 0;
+bool f_rf_reset        = 0;
+bool f_send_channel    = 0;
+bool f_rf_send_bitkb   = 0;
+bool f_rf_send_byte    = 0;
+bool f_rf_send_consume = 0;
+bool f_dial_sw_init_ok = 0;
+bool f_rf_sw_press     = 0;
+bool f_dev_reset_press = 0;
+bool f_rgb_test_press  = 0;
+bool f_win_lock        = 0;
+bool f_uart_ack        = 0;
+bool f_rf_hand_ok      = 0;
 
-
-void rf_uart_init(void);
-void rf_device_init(void);
-void m_side_led_show(void);
-void dev_sts_sync(void);
-void uart_send_report_func(void);
-void uart_receive_pro(void);
-void Sleep_Handle(void);
+void    rf_uart_init(void);
+void    rf_device_init(void);
+void    m_side_led_show(void);
+void    dev_sts_sync(void);
+void    uart_receive_pro(void);
+void    Sleep_Handle(void);
 uint8_t uart_send_cmd(uint8_t cmd, uint8_t ack_cnt, uint8_t delayms);
-void uart_send_report(uint8_t report_type, uint8_t *report_buf, uint8_t report_size);
-void device_reset_show(void);
-void device_reset_init(void);
-void rgb_test_show(void);
+void    uart_send_report(uint8_t report_type, uint8_t *report_buf, uint8_t report_size);
+void    uart_send_report_repeat(void);
+void    device_reset_show(void);
+void    device_reset_init(void);
+void    rgb_test_show(void);
 
 extern void light_speed_contol(uint8_t fast);
 extern void light_level_control(uint8_t brighten);
@@ -91,9 +89,7 @@ extern void logo_light_level_control(uint8_t brighten);
 extern void logo_side_colour_control(uint8_t dir);
 extern void logo_side_mode_control(uint8_t dir);
 
-
-void flash_data_manage(void)
-{
+void flash_data_manage(void) {
     if (f_func_save) {
         f_func_save = 0;
         uart_send_cmd(CMD_WRITE_DATA, 20, 30);
@@ -103,55 +99,56 @@ void flash_data_manage(void)
 /**
  * @brief  gpio initial.
  */
-void m_gpio_init(void)
-{
-    setPinOutput(DC_BOOST_PIN); writePinHigh(DC_BOOST_PIN);
+void m_gpio_init(void) {
+    gpio_set_pin_output(DC_BOOST_PIN);
+    gpio_write_pin_high(DC_BOOST_PIN);
 
-    setPinInput(DRIVER_LED_CS_PIN);
-    setPinInput(DRIVER_SIDE_CS_PIN);
-    setPinOutput(DRIVER_SIDE_PIN); writePinLow(DRIVER_SIDE_PIN);
-#if(WORK_MODE == THREE_MODE)
-    setPinOutput(NRF_WAKEUP_PIN);
-    writePinHigh(NRF_WAKEUP_PIN);
+    gpio_set_pin_input(DRIVER_LED_CS_PIN);
+    gpio_set_pin_input(DRIVER_SIDE_CS_PIN);
+    gpio_set_pin_output(DRIVER_SIDE_PIN);
+    gpio_write_pin_low(DRIVER_SIDE_PIN);
+#if (WORK_MODE == THREE_MODE)
+    gpio_set_pin_output(NRF_WAKEUP_PIN);
+    gpio_write_pin_high(NRF_WAKEUP_PIN);
 
-    setPinInputHigh(NRF_BOOT_PIN);
+    gpio_set_pin_input_high(NRF_BOOT_PIN);
 
-    setPinOutput(NRF_RESET_PIN); writePinLow(NRF_RESET_PIN);
+    gpio_set_pin_output(NRF_RESET_PIN);
+    gpio_write_pin_low(NRF_RESET_PIN);
     wait_ms(50);
-    writePinHigh(NRF_RESET_PIN);
+    gpio_write_pin_high(NRF_RESET_PIN);
 
-    setPinInputHigh(DEV_MODE_PIN);
+    gpio_set_pin_input_high(DEV_MODE_PIN);
 #endif
-    setPinInputHigh(SYS_MODE_PIN);
+    gpio_set_pin_input_high(SYS_MODE_PIN);
 
     // open power
-    setPinOutput(DC_BOOST_PIN);
-    writePinHigh(DC_BOOST_PIN);
+    gpio_set_pin_output(DC_BOOST_PIN);
+    gpio_write_pin_high(DC_BOOST_PIN);
 
-    setPinOutput(DRIVER_LED_CS_PIN);
-    writePinLow(DRIVER_LED_CS_PIN);
+    gpio_set_pin_output(DRIVER_LED_CS_PIN);
+    gpio_write_pin_low(DRIVER_LED_CS_PIN);
 
-    setPinOutput(DRIVER_SIDE_CS_PIN);
-    writePinLow(DRIVER_SIDE_CS_PIN);
+    gpio_set_pin_output(DRIVER_SIDE_CS_PIN);
+    gpio_write_pin_low(DRIVER_SIDE_CS_PIN);
 }
 
 /**
  * @brief  long press key process.
  */
-void long_press_key(void)
-{
+void long_press_key(void) {
     static uint32_t long_press_timer = 0;
 
     if (timer_elapsed32(long_press_timer) < 100) return;
     long_press_timer = timer_read32();
     if (f_rf_sw_press) {
         rf_sw_press_delay++;
-        if (rf_sw_press_delay >= RF_LONG_PRESS_DELAY)  {
-            f_rf_sw_press = 0;
+        if (rf_sw_press_delay >= RF_LONG_PRESS_DELAY) {
+            f_rf_sw_press        = 0;
             dev_info.link_mode   = rf_sw_temp;
             dev_info.rf_channel  = rf_sw_temp;
             dev_info.ble_channel = rf_sw_temp;
-            uint8_t timeout = 5;
+            uint8_t timeout      = 5;
             while (timeout--) {
                 uart_send_cmd(CMD_NEW_ADV, 0, 1);
                 wait_ms(20);
@@ -163,14 +160,14 @@ void long_press_key(void)
     }
     if (f_dev_reset_press) {
         dev_reset_press_delay++;
-        if (dev_reset_press_delay >= DEV_RESET_PRESS_DELAY)  {
+        if (dev_reset_press_delay >= DEV_RESET_PRESS_DELAY) {
             f_dev_reset_press = 0;
-#if(WORK_MODE == THREE_MODE)
+#if (WORK_MODE == THREE_MODE)
             if (dev_info.link_mode != LINK_USB) {
                 if (dev_info.link_mode != LINK_RF_24) {
-                    dev_info.link_mode      = LINK_BT_1;
-                    dev_info.ble_channel    = LINK_BT_1;
-                    dev_info.rf_channel     = LINK_BT_1;
+                    dev_info.link_mode   = LINK_BT_1;
+                    dev_info.ble_channel = LINK_BT_1;
+                    dev_info.rf_channel  = LINK_BT_1;
                 }
             } else {
                 dev_info.ble_channel = LINK_BT_1;
@@ -186,7 +183,7 @@ void long_press_key(void)
             device_reset_init();
 
             keymap_config.no_gui = 0;
-            f_win_lock = 0;
+            f_win_lock           = 0;
 
             if (dev_info.sys_sw_state == SYS_SW_MAC) {
                 default_layer_set(1 << 0);
@@ -199,7 +196,6 @@ void long_press_key(void)
     } else {
         dev_reset_press_delay = 0;
     }
-
 
     if (f_rgb_test_press) {
         rgb_test_press_delay++;
@@ -215,10 +211,9 @@ void long_press_key(void)
 /**
  * @brief  Release all keys, clear keyboard report.
  */
-void m_break_all_key(void)
-{
+void m_break_all_key(void) {
     uint8_t report_buf[16];
-    bool nkro_temp = keymap_config.nkro;
+    bool    nkro_temp = keymap_config.nkro;
 
     clear_weak_mods();
     clear_mods();
@@ -235,7 +230,6 @@ void m_break_all_key(void)
     wait_ms(10);
 
     keymap_config.nkro = nkro_temp;
-
 
     if (dev_info.link_mode != LINK_USB) {
         memset(report_buf, 0, 16);
@@ -254,7 +248,7 @@ void m_break_all_key(void)
  * @brief  switch device link mode.
  * @param mode : link mode
  */
-#if(WORK_MODE == THREE_MODE)
+#if (WORK_MODE == THREE_MODE)
 static void switch_dev_link(uint8_t mode) {
     if (mode > LINK_USB) return;
 
@@ -272,7 +266,7 @@ static void switch_dev_link(uint8_t mode) {
     } else {
         host_mode = HOST_RF_TYPE;
 
-        host_set_driver(0);
+        host_set_driver(&rf_host_driver);
     }
 }
 
@@ -281,24 +275,23 @@ static void switch_dev_link(uint8_t mode) {
 /**
  * @brief  scan dial switch.
  */
-void dial_sw_scan(void)
-{
-    uint8_t dial_scan               = 0;
-    static uint8_t dial_save        = 0xf0;
-    static uint8_t debounce         = 0;
+void dial_sw_scan(void) {
+    uint8_t         dial_scan       = 0;
+    static uint8_t  dial_save       = 0xf0;
+    static uint8_t  debounce        = 0;
     static uint32_t dial_scan_timer = 0;
-    static bool flag_power_on       = 1;
+    static bool     flag_power_on   = 1;
 
     if (!flag_power_on) {
         if (timer_elapsed32(dial_scan_timer) < 20) return;
     }
     dial_scan_timer = timer_read32();
 
-#if(WORK_MODE == THREE_MODE)
-    setPinInputHigh(DEV_MODE_PIN);
+#if (WORK_MODE == THREE_MODE)
+    gpio_set_pin_input_high(DEV_MODE_PIN);
 #endif
-    setPinInputHigh(SYS_MODE_PIN);
-#if(WORK_MODE == THREE_MODE)
+    gpio_set_pin_input_high(SYS_MODE_PIN);
+#if (WORK_MODE == THREE_MODE)
     if (readPin(DEV_MODE_PIN)) dial_scan |= 0X01;
 #endif
     if (readPin(SYS_MODE_PIN)) dial_scan |= 0X02;
@@ -306,17 +299,17 @@ void dial_sw_scan(void)
     if (dial_save != dial_scan) {
         m_break_all_key();
         dial_save         = dial_scan;
-        no_act_time         = 0;
-        rf_linking_time     = 0;
-        debounce            = 25;
-        f_dial_sw_init_ok   = 0;
+        no_act_time       = 0;
+        rf_linking_time   = 0;
+        debounce          = 25;
+        f_dial_sw_init_ok = 0;
         return;
     } else if (debounce) {
         debounce--;
         return;
     }
 
-#if(WORK_MODE == THREE_MODE)
+#if (WORK_MODE == THREE_MODE)
 
     if (dial_scan & 0x01) {
         if (dev_info.link_mode != LINK_USB) {
@@ -355,10 +348,10 @@ void dial_sw_scan(void)
         f_dial_sw_init_ok = 1;
         flag_power_on     = 0;
 
-#if(WORK_MODE == THREE_MODE)
+#if (WORK_MODE == THREE_MODE)
 
         if (dev_info.link_mode != LINK_USB) {
-            host_set_driver(0);
+            host_set_driver(&rf_host_driver);
         }
 #endif
     }
@@ -367,38 +360,40 @@ void dial_sw_scan(void)
 /**
  * @brief  power on scan dial switch.
  */
-void m_power_on_dial_sw_scan(void)
-{
-    uint8_t dial_scan_dev = 0;
-    uint8_t dial_scan_sys = 0;
+void m_power_on_dial_sw_scan(void) {
+    uint8_t dial_scan_dev  = 0;
+    uint8_t dial_scan_sys  = 0;
     uint8_t dial_check_dev = 0;
     uint8_t dial_check_sys = 0;
-    uint8_t debounce = 0;
+    uint8_t debounce       = 0;
 
     f_win_lock = 0;
-#if(WORK_MODE == THREE_MODE)
-    setPinInputHigh(DEV_MODE_PIN);
+#if (WORK_MODE == THREE_MODE)
+    gpio_set_pin_input_high(DEV_MODE_PIN);
 #endif
-    setPinInputHigh(SYS_MODE_PIN);
+    gpio_set_pin_input_high(SYS_MODE_PIN);
 
-    for(debounce=0; debounce<10; debounce++) {
+    for (debounce = 0; debounce < 10; debounce++) {
         dial_scan_dev = 0;
         dial_scan_sys = 0;
-#if(WORK_MODE == THREE_MODE)
-        if (readPin(DEV_MODE_PIN))  dial_scan_dev = 0x01;
-        else                        dial_scan_dev = 0;
+#if (WORK_MODE == THREE_MODE)
+        if (readPin(DEV_MODE_PIN))
+            dial_scan_dev = 0x01;
+        else
+            dial_scan_dev = 0;
 #endif
-        if (readPin(SYS_MODE_PIN))  dial_scan_sys = 0x01;
-        else                        dial_scan_sys = 0;
-        if((dial_scan_dev != dial_check_dev)||(dial_scan_sys != dial_check_sys))
-        {
+        if (readPin(SYS_MODE_PIN))
+            dial_scan_sys = 0x01;
+        else
+            dial_scan_sys = 0;
+        if ((dial_scan_dev != dial_check_dev) || (dial_scan_sys != dial_check_sys)) {
             dial_check_dev = dial_scan_dev;
             dial_check_sys = dial_scan_sys;
-            debounce = 0;
+            debounce       = 0;
         }
         wait_ms(1);
     }
-#if(WORK_MODE == THREE_MODE)
+#if (WORK_MODE == THREE_MODE)
     if (dial_scan_dev) {
         if (dev_info.link_mode != LINK_USB) {
             switch_dev_link(LINK_USB);
@@ -429,10 +424,9 @@ void m_power_on_dial_sw_scan(void)
 }
 
 /* qmk process record */
-bool process_record_user(uint16_t keycode, keyrecord_t *record)
-{
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     no_act_time = 0;
-    
+
     switch (keycode) {
         case RF_DFU:
             if (record->event.pressed) {
@@ -657,10 +651,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record)
 
         case WIN_LOCK:
             if (record->event.pressed) {
-            keymap_config.no_gui = !keymap_config.no_gui;
-            eeconfig_update_keymap(keymap_config.raw);
-            m_break_all_key();
-            } else  unregister_code16(keycode);
+                keymap_config.no_gui = !keymap_config.no_gui;
+                eeconfig_update_keymap(keymap_config.raw);
+                m_break_all_key();
+            } else
+                unregister_code16(keycode);
             break;
 
         case RGB_TEST:
@@ -675,8 +670,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record)
             if (record->event.pressed) {
                 register_code(KC_LSFT);
                 register_code(KC_GRV);
-            }
-            else {
+            } else {
                 unregister_code(KC_LSFT);
                 unregister_code(KC_GRV);
             }
@@ -713,22 +707,18 @@ void timer_pro(void) {
 
     if (rf_linking_time < 0xffff) rf_linking_time++;
 
-#if(WORK_MODE == THREE_MODE)
-    if (rf_linking_time < 0xffff)
-        rf_linking_time++;
+#if (WORK_MODE == THREE_MODE)
+    if (rf_linking_time < 0xffff) rf_linking_time++;
 #endif
 }
 
 /**
  * @brief  londing eeprom data.
  */
-void m_londing_eeprom_data(void)
-{
+void m_londing_eeprom_data(void) {
     eeconfig_read_user_datablock(&user_config);
     if (user_config.default_brightness_flag != 0xA5) {
-        rgb_matrix_sethsv(  RGB_DEFAULT_COLOUR,
-                            255,
-                            RGB_MATRIX_MAXIMUM_BRIGHTNESS - RGB_MATRIX_VAL_STEP * 2);
+        rgb_matrix_sethsv(RGB_DEFAULT_COLOUR, 255, RGB_MATRIX_MAXIMUM_BRIGHTNESS - RGB_MATRIX_VAL_STEP * 2);
         user_config.default_brightness_flag = 0xA5;
         user_config.ee_side_mode            = side_mode;
         user_config.ee_side_light           = side_light;
@@ -740,10 +730,10 @@ void m_londing_eeprom_data(void)
         user_config.ee_logo_speed           = logo_speed;
         user_config.ee_logo_rgb             = logo_rgb;
         user_config.ee_logo_colour          = logo_colour;
-#if(WORK_MODE == THREE_MODE)
-        f_dev_sleep_enable                  = 1;
+#if (WORK_MODE == THREE_MODE)
+        f_dev_sleep_enable = 1;
 #else
-        f_dev_sleep_enable                  = 0;
+        f_dev_sleep_enable = 0;
 #endif
         eeconfig_update_user_datablock(&user_config);
     } else {
@@ -758,14 +748,12 @@ void m_londing_eeprom_data(void)
         logo_rgb    = user_config.ee_logo_rgb;
         logo_colour = user_config.ee_logo_colour;
     }
-
 }
 
 /* qmk keyboard post init */
-void keyboard_post_init_user(void)
-{
+void keyboard_post_init_user(void) {
     m_gpio_init();
-#if(WORK_MODE == THREE_MODE)
+#if (WORK_MODE == THREE_MODE)
     rf_uart_init();
     wait_ms(500);
     rf_device_init();
@@ -775,36 +763,32 @@ void keyboard_post_init_user(void)
     m_londing_eeprom_data();
     m_power_on_dial_sw_scan();
 
-#if(WORK_MODE == USB_MODE)
+#if (WORK_MODE == USB_MODE)
     rf_link_show_time = 0;
 #endif
 }
 
-
-bool rgb_matrix_indicators_user(void)
-{
+bool rgb_matrix_indicators_user(void) {
     return true;
 }
 
-bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max)
-{
+bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     if (keymap_config.no_gui) {
         rgb_matrix_set_color(16, 0x00, 0x80, 0x00);
     }
 
-    rgb_matrix_set_color(RGB_MATRIX_LED_COUNT-1, 0, 0, 0);
+    rgb_matrix_set_color(RGB_MATRIX_LED_COUNT - 1, 0, 0, 0);
     return true;
 }
 
 /* qmk housekeeping task */
-void housekeeping_task_user(void)
-{
+void housekeeping_task_user(void) {
     timer_pro();
 
-#if(WORK_MODE == THREE_MODE)
+#if (WORK_MODE == THREE_MODE)
     uart_receive_pro();
 
-    uart_send_report_func();
+    uart_send_report_repeat();  
 
     dev_sts_sync();
 
@@ -819,5 +803,4 @@ void housekeeping_task_user(void)
     m_side_led_show();
 
     Sleep_Handle();
-
 }
