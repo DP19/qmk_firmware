@@ -690,8 +690,8 @@ void device_reset_init(void) {
 
     rgb_matrix_enable();
     rgb_matrix_mode(RGB_MATRIX_DEFAULT_MODE);
-    rgb_matrix_set_speed(255);
-    rgb_matrix_sethsv(255, 255, RGB_MATRIX_DEFAULT_VAL);
+    rgb_matrix_set_speed(RGB_MATRIX_DEFAULT_SPD);
+    rgb_matrix_sethsv(RGB_MATRIX_DEFAULT_HUE, RGB_MATRIX_DEFAULT_SAT, RGB_MATRIX_DEFAULT_VAL);
 }
 
 /**

@@ -8,9 +8,9 @@ A lot of these customizations and fixes were implemented by @jincao1 & @adi4086 
 
 - `Fn + B` when held temporarily displays the current battery percentage on the F and number row.
 The F row represents the 10s percentage and number row the ones. Example, 35% will light `F1` -> `F3` and `1` -> `5`.
-- Side indicators will flash blue for 0.3s when board enters deep sleep.
+- Side indicators will flash red for 0.3s when board enters deep sleep.
 - Bluetooth connection indicators will be lit blue when establishing connection. This lights the corresponding
-BT mode key. No indicator for RF.
+BT mode key. Green indicator for RF connection
 - RGB will be disabled when brightness is 0 for both side lights and keyboard lights. Default is on for both
 - 3ms debounce instead of 2ms (potential stability)
 

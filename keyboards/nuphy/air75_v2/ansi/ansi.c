@@ -242,6 +242,8 @@ bool rgb_matrix_indicators_kb(void) {
     // light up corresponding BT mode key during connection
     if (rf_blink_cnt && dev_info.link_mode >= LINK_BT_1 && dev_info.link_mode <= LINK_BT_3) {
         user_set_rgb_color(30 - dev_info.link_mode, 0, 0, 0x80);
+    } else if (rf_blink_cnt && dev_info.link_mode == LINK_RF_24) {
+        user_set_rgb_color(26, 0, 0x80, 0);
     }
 
     // power down unused LEDs

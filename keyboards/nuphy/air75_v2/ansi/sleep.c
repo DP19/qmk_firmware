@@ -48,8 +48,8 @@ void signal_sleep(uint8_t r, uint8_t g, uint8_t b) {
 }
 
 void deep_sleep_handle(void) {
-    // flash blue when deep sleep is about to happen
-    signal_sleep(0x00, 0x00, 0x99);
+    // flash red when deep sleep is about to happen
+    signal_sleep(0x99, 0x00, 0x00);
 
     // Sync again before sleeping
     dev_sts_sync();
