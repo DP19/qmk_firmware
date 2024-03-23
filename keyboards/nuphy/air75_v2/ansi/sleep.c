@@ -122,7 +122,7 @@ void sleep_handle(void) {
     if (dev_info.link_mode == LINK_USB) {
         if (USB_DRIVER.state == USB_SUSPENDED) {
             usb_suspend_debounce++;
-            if (usb_suspend_debounce >= 20) {
+            if (usb_suspend_debounce >= 20 && (dev_info.rf_charge != 0x03)) {
                 f_goto_sleep = 1;
                 f_force_deep = 1;
             }
