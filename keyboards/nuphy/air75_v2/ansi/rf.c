@@ -160,7 +160,7 @@ void uart_send_report_repeat(void) {
     uint8_t interval = get_repeat_interval();
     if (timer_elapsed32(uart_rpt_timer) >= interval) {
         uart_rpt_timer = timer_read32();
-        if (no_act_time <= 50) {
+        if (no_act_time <= 25) {
             if (f_byte_send) {
                 uart_send_report(CMD_RPT_BYTE_KB, bytekb_report_buf, 8);
                 f_byte_send++;
