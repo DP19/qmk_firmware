@@ -1,0 +1,9 @@
+VIA_ENABLE = yes
+LTO_ENABLE = yes
+RGB_MATRIX_CUSTOM_USER = yes
+
+# Disable Unused Features
+NKRO_ENABLE = no
+KEY_LOCK_ENABLE = no
+MOUSEKEY_ENABLE = no
+MIDI_ENABLE = no
