@@ -1007,9 +1007,9 @@ bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max) {
     HSV hsv = {0, 255, 255};
 
     if (layer_state_is(layer_state, 2)) {
-        hsv = {130, 255, 255};
+        hsv = (HSV){130, 255, 255};
     } else {
-        hsv = {30, 255, 255};
+        hsv = (HSV){30, 255, 255};
     }
 
     if (hsv.v > rgb_matrix_get_val()) {
@@ -1177,7 +1177,7 @@ Move to the previous enabled effect.
 
 ---
 
-### `void rgb_matrix_step_reverse_noeeprom(void)` {#api-rgb-matrix-step-reverse}
+### `void rgb_matrix_step_reverse_noeeprom(void)` {#api-rgb-matrix-step-reverse-noeeprom}
 
 Move to the previous enabled effect. New state is not written to EEPROM.
 
