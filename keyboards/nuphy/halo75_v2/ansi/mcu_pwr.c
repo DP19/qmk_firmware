@@ -15,6 +15,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "config.h"
 #include "user_kb.h"
 #include "mcu_stm32f0xx.h"
 #include "mcu_pwr.h"
@@ -25,10 +26,8 @@ static const pin_t col_pins[MATRIX_COLS] = MATRIX_COL_PINS;
 extern DEV_INFO_STRUCT dev_info;
 
 bool        f_usb_deinit         = 0;
-static bool side_led_powered_off = 0;
 static bool rgb_led_powered_off  = 0;
 static bool rgb_led_on           = 0;
-static bool side_led_on          = 0;
 static bool tim6_enabled         = false;
 
 /** ================================================================
@@ -152,16 +151,11 @@ void enter_deep_sleep(void) {
     gpio_set_pin_output(SYS_MODE_PIN);
     gpio_write_pin_low(SYS_MODE_PIN);
 
-    // gpio_set_pin_output(A7);
-    // gpio_write_pin_low(A7);
-    // gpio_set_pin_output(DRIVER_SIDE_PIN);
-    // gpio_write_pin_low(DRIVER_SIDE_PIN);
+    gpio_set_pin_output(NRF_TEST_PIN);
+    gpio_write_pin_high(NRF_TEST_PIN);
 
-    gpio_set_pin_output(NRF_BOOT_PIN);
-    gpio_write_pin_high(NRF_BOOT_PIN);
-
-    gpio_set_pin_output(NRF_WAKEUP_PIN);
-    gpio_write_pin_high(NRF_WAKEUP_PIN);
+    gpio_set_pin_input(NRF_WAKEUP_PIN);
+    gpio_write_pin_low(NRF_WAKEUP_PIN);
 
     // Enter low power mode and wait for interrupt signal
     PWR_EnterSTOPMode(PWR_Regulator_LowPower, PWR_STOPEntry_WFI);
@@ -177,6 +171,7 @@ void exit_deep_sleep(void) {
     gpio_set_pin_input_high(SYS_MODE_PIN); // PC1
 
     gpio_set_pin_output(NRF_WAKEUP_PIN);
+    gpio_write_pin_high(NRF_WAKEUP_PIN);
 
     // Power on LEDs
     led_pwr_wake_handle();
@@ -227,7 +222,6 @@ void exit_light_sleep(void) {
 
 void led_pwr_sleep_handle(void) {
     // reset the flags.
-    side_led_powered_off = 0;
     rgb_led_powered_off  = 0;
 
     // power off leds if they were enabled
@@ -235,18 +229,11 @@ void led_pwr_sleep_handle(void) {
         rgb_led_powered_off = 1;
         pwr_rgb_led_off();
     }
-    if (is_side_led_on()) {
-        side_led_powered_off = 1;
-        pwr_side_led_off();
-    }
 }
 
 void led_pwr_wake_handle(void) {
     if (rgb_led_powered_off) {
         pwr_rgb_led_on();
-    }
-    if (side_led_powered_off) {
-        pwr_side_led_on();
     }
 }
 
@@ -255,7 +242,10 @@ void pwr_rgb_led_off(void) {
     // LED power supply off
     gpio_set_pin_output(DC_BOOST_PIN);
     gpio_write_pin_low(DC_BOOST_PIN);
-    gpio_set_pin_input(RGB_DRIVER_SDB1);
+    gpio_set_pin_output(RGB_DRIVER_SDB1);
+    gpio_write_pin_low(RGB_DRIVER_SDB1);
+    gpio_set_pin_output(RGB_DRIVER_SDB2);
+    gpio_write_pin_low(RGB_DRIVER_SDB2);
     rgb_led_on = 0;
 }
 
@@ -265,29 +255,14 @@ void pwr_rgb_led_on(void) {
     gpio_set_pin_output(DC_BOOST_PIN);
     gpio_write_pin_high(DC_BOOST_PIN);
     gpio_set_pin_output(RGB_DRIVER_SDB1);
-    gpio_write_pin_low(RGB_DRIVER_SDB1);
-    rgb_led_on = 1;
-}
-
-void pwr_side_led_off(void) {
-    if (!side_led_on) return;
-    gpio_set_pin_input(RGB_DRIVER_SDB2);
-    side_led_on = 0;
-}
-
-void pwr_side_led_on(void) {
-    if (side_led_on) return;
+    gpio_write_pin_high(RGB_DRIVER_SDB1);
     gpio_set_pin_output(RGB_DRIVER_SDB2);
-    gpio_write_pin_low(RGB_DRIVER_SDB2);
-    side_led_on = 1;
+    gpio_write_pin_high(RGB_DRIVER_SDB2);
+    rgb_led_on = 1;
 }
 
 bool is_rgb_led_on(void) {
     return rgb_led_on;
-}
-
-bool is_side_led_on(void) {
-    return side_led_on;
 }
 
 /**

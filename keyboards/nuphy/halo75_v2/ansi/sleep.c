@@ -16,33 +16,31 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "user_kb.h"
-#include "ansi.h"
 #include "hal_usb.h"
 #include "usb_main.h"
 #include "mcu_pwr.h"
 
-extern user_config_t   user_config;
-extern DEV_INFO_STRUCT dev_info;
-extern uint16_t        rf_linking_time;
-extern uint16_t        no_act_time;
-extern bool            f_goto_sleep;
-extern bool            f_force_deep;
-extern bool            f_wakeup_prepare;
+extern user_config_t    user_config;
+extern DEV_INFO_STRUCT  dev_info;
+extern uint16_t         rf_linking_time;
+extern uint16_t         no_act_time;
+extern bool             f_goto_sleep;
+extern bool             f_force_deep;
+extern bool             f_wakeup_prepare;
 
-void set_left_rgb(uint8_t r, uint8_t g, uint8_t b);
+extern void set_left_rgb(uint8_t r, uint8_t g, uint8_t b);
 
-void signal_sleep(uint8_t r, uint8_t g, uint8_t b) {
+static void signal_sleep(uint8_t r, uint8_t g, uint8_t b) {
     // Visual cue for sleep/wake on side LED.
-    pwr_side_led_on();
+    pwr_rgb_led_on();
     wait_ms(50); // give some time to ensure LED powers on.
     set_left_rgb(r, g, b);
-    // side_rgb_refresh();
     wait_ms(300);
 }
 
 void deep_sleep_handle(void) {
     // flash red when deep sleep is about to happen
-    signal_sleep(0x99, 0x00, 0x00);
+    signal_sleep(0xff, 0x00, 0x00);
 
     // Sync again before sleeping
     dev_sts_sync();
@@ -52,7 +50,7 @@ void deep_sleep_handle(void) {
     f_goto_sleep = 0;
 
     // flash white on wake up
-    signal_sleep(0x99, 0x99, 0x99);
+    signal_sleep(0xff, 0xff, 0xff);
     /* If RF is not connected anymore you would lose the first keystroke.
        This is expected behavior as the connection is not there.
     */
@@ -63,9 +61,9 @@ void deep_sleep_handle(void) {
  * @brief  Sleep Handle.
  */
 void sleep_handle(void) {
-    static uint32_t delay_step_timer     = 0;
+    static uint32_t delay_step_timer = 0;
     static uint8_t  usb_suspend_debounce = 0;
-    static uint32_t rf_disconnect_time   = 0;
+    static uint32_t rf_disconnect_time = 0;
 
     /* 50ms interval */
     if (timer_elapsed32(delay_step_timer) < 50) return;
@@ -73,28 +71,16 @@ void sleep_handle(void) {
 
     // sleep process
     if (f_goto_sleep) {
-        bool deep_sleep = 0;
-        f_goto_sleep    = 0;
-
+        bool deep_sleep = false;
         if (user_config.sleep_enable) {
-            deep_sleep = 1;
+            deep_sleep = true;
             if (f_force_deep) {
+                // Deep is already set just skip the reset of the else checks
             } else if (no_act_time < SLEEP_TIME_DELAY) {
-                deep_sleep = 0;
+                deep_sleep = false;
             } else if (dev_info.link_mode == LINK_USB && USB_DRIVER.state == USB_SUSPENDED) {
                 deep_sleep = 0;
             }
-
-            // if (dev_info.rf_state == RF_CONNECT)
-            //     uart_send_cmd(CMD_SET_CONFIG, 5, 5);
-            // else
-            //     uart_send_cmd(CMD_SLEEP, 5, 5);
-
-            // // power off led
-            // gpio_write_pin_low(DC_BOOST_PIN);
-            // gpio_write_pin_low(RGB_DRIVER_SDB1);
-            // gpio_write_pin_low(RGB_DRIVER_SDB2);
-            //
         }
 
         if (deep_sleep) {
@@ -107,28 +93,10 @@ void sleep_handle(void) {
         }
     }
 
-    // wakeup check
-    if (f_wakeup_prepare) {
-        if (no_act_time < 10) {
-            f_wakeup_prepare = 0;
-            f_goto_sleep     = 0;
-            exit_light_sleep();
+    // sleep check, won't reach here on deep sleep.
+    if (f_goto_sleep || f_wakeup_prepare) return;
 
-            // gpio_write_pin_high(DC_BOOST_PIN);
-            //         gpio_write_pin_high(RGB_DRIVER_SDB1);
-            //         gpio_write_pin_high(RGB_DRIVER_SDB2);
-
-            //         uart_send_cmd(CMD_HAND, 0, 1);
-
-            //         if (dev_info.link_mode == LINK_USB) {
-            //             usb_lld_wakeup_host(&USB_DRIVER);
-            //             restart_usb_driver(&USB_DRIVER);
-            //         }
-        }
-    }
-
-    if (f_wakeup_prepare) return;
-
+    // sleep check
     if (dev_info.link_mode == LINK_USB) {
         if (USB_DRIVER.state == USB_SUSPENDED) {
             usb_suspend_debounce++;
@@ -151,8 +119,8 @@ void sleep_handle(void) {
         rf_disconnect_time++;
         if (rf_disconnect_time > 5 * 20) {
             rf_disconnect_time = 0;
-            f_goto_sleep       = 1;
-            f_force_deep       = 1;
+            f_goto_sleep = 1;
+            f_force_deep = 1;
         }
     }
 }

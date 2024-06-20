@@ -16,25 +16,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
 
-#define RGB_MATRIX_LED_FLUSH_LIMIT 32
-#define TAP_CODE_DELAY             8
-#define DYNAMIC_KEYMAP_MACRO_DELAY 8
+#define RGB_MATRIX_LED_FLUSH_LIMIT  25
+#define TAPPING_TERM                200
+#define TAP_CODE_DELAY              8
+#define DYNAMIC_KEYMAP_MACRO_DELAY  8
 
-#define DEV_MODE_PIN   C0
-#define SYS_MODE_PIN   C1
-#define DC_BOOST_PIN   C2
-#define NRF_RESET_PIN  B4
-#define NRF_BOOT_PIN   B5 // NRF_TEST_PIN
-#define NRF_WAKEUP_PIN C4
 
-#define RGB_DRIVER_SDB1 C6 // keys
-#define RGB_DRIVER_SDB2 C7 // underglow
+#define DEV_MODE_PIN                C0
+#define SYS_MODE_PIN                C1
+#define DC_BOOST_PIN                C2
+#define NRF_RESET_PIN               B4
+#define NRF_TEST_PIN                B5
+#define NRF_WAKEUP_PIN              C4
 
-#define SERIAL_DRIVER   SD1
-#define SD1_TX_PIN      B6
-#define SD1_TX_PAL_MODE 0
-#define SD1_RX_PIN      B7
-#define SD1_RX_PAL_MODE 0
+#define RGB_DRIVER_SDB1             C6
+#define RGB_DRIVER_SDB2             C7
+
+#define SERIAL_DRIVER               SD1
+#define SD1_TX_PIN                  B6
+#define SD1_TX_PAL_MODE             0
+#define SD1_RX_PIN                  B7
+#define SD1_RX_PAL_MODE             0
 
 // This is a 7-bit address, that gets left-shifted and bit 0
 // set to 0 for write, 1 for read (as per I2C protocol)
@@ -43,41 +45,58 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // 0b1110111 AD <-> VCC
 // 0b1110101 AD <-> SCL
 // 0b1110110 AD <-> SDA
-#define DRIVER_ADDR_1 0b1010000
-#define DRIVER_ADDR_2 0b1010011
+#define DRIVER_ADDR_1              0b1010000
+#define DRIVER_ADDR_2              0b1010011
 
-#define ISSI_TIMEOUT 1
+#define ISSI_TIMEOUT               1
 
 /* I2C Alternate function settings */
-#define I2C_DRIVER       I2CD1
-#define I2C1_SCL_PIN     B8
-#define I2C1_SDA_PIN     B9
-#define I2C1_CLOCK_SPEED 1000000
+#define I2C_DRIVER                 I2CD1
+#define I2C1_SCL_PIN               B8
+#define I2C1_SDA_PIN               B9
+#define I2C1_CLOCK_SPEED           1000000
 
-#define I2C1_SCL_PAL_MODE 1
-#define I2C1_SDA_PAL_MODE 1
+#define I2C1_SCL_PAL_MODE          1
+#define I2C1_SDA_PAL_MODE          1
 
-#define I2C1_TIMINGR_PRESC  0U
-#define I2C1_TIMINGR_SCLDEL 0U
-#define I2C1_TIMINGR_SDADEL 0U
-#define I2C1_TIMINGR_SCLH   0U
-#define I2C1_TIMINGR_SCLL   0U
-#define I2C1_DUTY_CYCLE     FAST_DUTY_CYCLE_16_9
+#define I2C1_TIMINGR_PRESC         0U
+#define I2C1_TIMINGR_SCLDEL        0U
+#define I2C1_TIMINGR_SDADEL        0U
+#define I2C1_TIMINGR_SCLH          0U
+#define I2C1_TIMINGR_SCLL          0U
+#define I2C1_DUTY_CYCLE            FAST_DUTY_CYCLE_16_9
 
-#define DRIVER_COUNT         2
-#define DRIVER_1_LED_TOTAL   64
-#define DRIVER_2_LED_TOTAL   64
-#define RGB_MATRIX_LED_COUNT (DRIVER_1_LED_TOTAL + DRIVER_2_LED_TOTAL)
+#define DRIVER_COUNT               2
+#define DRIVER_1_LED_TOTAL         64
+#define DRIVER_2_LED_TOTAL         64
+#define RGB_MATRIX_LED_COUNT       (DRIVER_1_LED_TOTAL + DRIVER_2_LED_TOTAL)
+
+#define RGB_MATRIX_DEFAULT_MODE     RGB_MATRIX_CUSTOM_position_mode
+#define RGB_DEFAULT_COLOUR          168
+
+#define IS31FL3733_SW_PULLUP PUR_05KR
+#define IS31FL3733_CS_PULLDOWN PUR_05KR
 
 #define RGB_MATRIX_FRAMEBUFFER_EFFECTS
 #define RGB_MATRIX_KEYPRESSES
 #define RGB_MATRIX_KEYRELEASES
 
-#define IS31FL3733_SW_PULLUP PUR_05KR
-#define IS31FL3733_CS_PULLDOWN PUR_05KR
+#define USB_SLEEP_ENABLED true
+
+#define DEBOUNCE_STEP 1
+
+#ifdef USB_SUSPEND_WAKEUP_DELAY
+#    undef USB_SUSPEND_WAKEUP_DELAY
+#endif
+#define USB_SUSPEND_WAKEUP_DELAY 50
+
+// debounce override - for clangd compliance - info_json.h - doesn't work most of the times
+#define DEBOUNCE 5
+// use dedicated timer for wait_us interrupts instead on ChibiOS defaulting to minimum 100us even if you sleep for 10us
+#define WAIT_US_TIMER GPTD14
 
 // This is the size of the EEPROM for the custom VIA-specific data
-#define EECONFIG_KB_DATA_SIZE      7
+#define EECONFIG_KB_DATA_SIZE     7
 // Override in keymaps
 #define DEFAULT_SIDE_MODE_A        0
 #define DEFAULT_SIDE_MODE_B        3

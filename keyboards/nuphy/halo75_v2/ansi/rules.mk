@@ -1,2 +1,6 @@
-SRC += mcu_pwr.c side.c rf.c sleep.c rf_driver.c user_kb.c
+SRC += user_kb.c
+SRC += rf.c
+SRC += side.c
+
+SRC += mcu_pwr.c sleep.c debounce.c rf_driver.c matrix.c
 UART_DRIVER_REQUIRED = yes

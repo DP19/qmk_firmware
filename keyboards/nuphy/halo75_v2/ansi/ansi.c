@@ -15,16 +15,16 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "user_kb.h"
 #include "ansi.h"
 #include "usb_main.h"
+#include "rf_driver.h"
+#include "user_kb.h"
 
 extern bool            f_rf_sw_press;
 extern bool            f_sleep_show;
 extern bool            f_dev_reset_press;
 extern bool            f_rf_dfu_press;
 extern bool            f_bat_num_show;
-extern bool            f_rgb_test_press;
 extern bool            f_bat_hold;
 extern uint16_t        no_act_time;
 extern uint8_t         rf_sw_temp;
@@ -33,17 +33,37 @@ extern uint16_t        rf_linking_time;
 extern user_config_t   user_config;
 extern DEV_INFO_STRUCT dev_info;
 extern uint32_t        uart_rpt_timer;
+extern uint16_t        rf_link_show_time;
 
-// do i need this?
-extern bool low_bat_flag;
+
+/**
+ * @brief  qmk pre process record - used to catch light sleep wake up faster
+ */
+bool pre_process_record_kb(uint16_t keycode, keyrecord_t *record) {
+    no_act_time     = 0;
+    rf_linking_time = 0;
+
+    // wakeup check for light sleep/no sleep - fire this immediately to not lose wake keys.
+    if (f_wakeup_prepare) {
+        f_wakeup_prepare = 0;
+        f_goto_sleep     = 0;
+        exit_light_sleep();
+    }
+
+    return pre_process_record_user(keycode, record);
+}
 
 /**
  * @brief  qmk process record
  */
-bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
+    if (!process_record_user(keycode, record)) {
+        return false;
+    }
     no_act_time     = 0;
     rf_linking_time = 0;
     uart_rpt_timer  = timer_read32();
+
     switch (keycode) {
         case RF_DFU:
             if (record->event.pressed) {
@@ -136,6 +156,13 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
 
+        case WIN_LOCK:
+            if (record->event.pressed) {
+                keymap_config.no_gui = !keymap_config.no_gui;
+            } else
+                unregister_code16(keycode);
+            break;
+
         case MAC_VOICE:
             if (record->event.pressed) {
                 host_consumer_send(0xcf);
@@ -154,7 +181,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
         case SIDE_VAI:
             if (record->event.pressed) {
-                if (low_bat_flag && (user_config.side_light == 1)) return false;
                 light_level_control(1);
             }
             return false;
@@ -225,65 +251,63 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             f_bat_num_show = record->event.pressed;
             return false;
 
-        case RGB_VAI:
-            if (low_bat_flag && (rgb_matrix_config.hsv.v == RGB_MATRIX_VAL_STEP)) return false;
-            return true;
-
         default:
             return true;
     }
     return true;
 }
 
+
 /**
    qmk keyboard post init
  */
-void keyboard_post_init_kb(void) {
+void keyboard_post_init_kb(void)
+{
     gpio_init();
     rf_uart_init();
     wait_ms(500);
     rf_device_init();
 
     break_all_key();
-    power_on_dial_sw_scan();
     eeconfig_read_kb_datablock(&user_config);
-    keyboard_post_init_user();
-
-    //rf_link_show_time = 0;
+    dial_sw_fast_scan();
 }
 
-/**
-   rgb_matrix_indicators_user
- */
-// bool rgb_matrix_indicators_advanced_user(uint8_t led_min, uint8_t led_max)
 bool rgb_matrix_indicators_kb(void) {
     if (!rgb_matrix_indicators_user()) {
         return false;
     }
+
     if (f_bat_num_show) {
         num_led_show();
     }
 
-    if (keymap_config.no_gui) {
-        rgb_matrix_set_color(72, 0x00, 0x80, 0x00);
+    // light up corresponding BT mode key during connection and  link show time
+    if (!f_power_show && (rf_blink_cnt || rf_link_show_time < RF_LINK_SHOW_TIME)) {
+        if (dev_info.link_mode >= LINK_BT_1 && dev_info.link_mode <= LINK_BT_3) {
+            user_set_rgb_color(16 + dev_info.link_mode, 0, 0, 0x80);
+        } else if (dev_info.link_mode == LINK_RF_24) {
+            user_set_rgb_color(20, 0, 0x80, 0);
+        }
     }
 
-    // light up corresponding BT mode key during connection
-    if (rf_blink_cnt && dev_info.link_mode >= LINK_BT_1 && dev_info.link_mode <= LINK_BT_3) {
-        user_set_rgb_color(30 - dev_info.link_mode, 0, 0, 0x80);
-    } else if (rf_blink_cnt && dev_info.link_mode == LINK_RF_24) {
-        user_set_rgb_color(26, 0, 0x80, 0);
+    if (keymap_config.no_gui) {
+        user_set_rgb_color(72, 0x00, 0x80, 0x00);
     }
 
     // power down unused LEDs
-    led_power_handle();
+    if (!f_power_show) {
+        led_power_handle();
+    }
     return true;
 }
 
 /**
    housekeeping_task_user
  */
-void housekeeping_task_kb(void) {
+void housekeeping_task_kb(void)
+{
+
     timer_pro();
 
     uart_receive_pro();
@@ -300,5 +324,4 @@ void housekeeping_task_kb(void) {
 
     sleep_handle();
 
-    housekeeping_task_user();
 }

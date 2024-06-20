@@ -12,9 +12,15 @@ enum custom_keycodes {
     LNK_BLE2,
     LNK_BLE3,
 
-
     MAC_VOICE,
     MAC_DND,
+    WIN_LOCK,
+
+    DEV_RESET,
+    SLEEP_MODE,
+    BAT_SHOW,
+    BAT_NUM,
+    RGB_TEST,
 
     SIDE_VAI,
     SIDE_VAD,
@@ -23,12 +29,6 @@ enum custom_keycodes {
     SIDE_HUI,
     SIDE_SPI,
     SIDE_SPD,
-
-    DEV_RESET,
-    SLEEP_MODE,
-    BAT_SHOW,
-    BAT_NUM,
-    RGB_TEST,
 };
 
 #define SYS_PRT                 G(S(KC_3))

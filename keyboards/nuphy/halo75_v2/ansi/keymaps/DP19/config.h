@@ -1,20 +1,21 @@
 
 #define RGB_MATRIX_SOLID_REACTIVE_GRADIENT_MODE
+#undef  RGB_MATRIX_KEYRELEASES
+#define LED_MATRIX_KEYPRESSES
 #undef  RGB_MATRIX_DEFAULT_MODE
 #define RGB_MATRIX_DEFAULT_MODE RGB_MATRIX_SOLID_REACTIVE_SIMPLE
 #define RGB_MATRIX_DEFAULT_VAL 255
 #define RGB_MATRIX_DEFAULT_SPD 255
 
 // Set Side Mode to Off and Light to 0 to disable
-#undef  DEFAULT_SIDE_MODE
-#define DEFAULT_SIDE_MODE_A  0
+#undef  DEFAULT_SIDE_MODE_A
+#define DEFAULT_SIDE_MODE_A  4
 
 #undef  DEFAULT_SIDE_MODE_B
 #define DEFAULT_SIDE_MODE_B  0 //off
 
 #undef DEFAULT_SIDE_COLOUR
-#define DEFAULT_SIDE_COLOUR  5 // Blue for initial turn on
-
+#define DEFAULT_SIDE_COLOUR  4 // Blue for initial turn on
 
 //Disable Other Animations
 #undef ENABLE_RGB_MATRIX_ALPHAS_MODS

@@ -15,16 +15,15 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "user_kb.h"
-#include "uart.h" // qmk uart.h
-#include "ansi.h"
+#include "uart.h"  // qmk uart.h
 #include "rf_driver.h"
 
 USART_MGR_STRUCT Usart_Mgr;
-#define RX_SBYTE Usart_Mgr.RXDBuf[0]
-#define RX_CMD Usart_Mgr.RXDBuf[1]
-#define RX_ACK Usart_Mgr.RXDBuf[2]
-#define RX_LEN Usart_Mgr.RXDBuf[3]
-#define RX_DAT Usart_Mgr.RXDBuf[4]
+#define RX_SBYTE    Usart_Mgr.RXDBuf[0]
+#define RX_CMD      Usart_Mgr.RXDBuf[1]
+#define RX_ACK      Usart_Mgr.RXDBuf[2]
+#define RX_LEN      Usart_Mgr.RXDBuf[3]
+#define RX_DAT      Usart_Mgr.RXDBuf[4]
 
 bool f_uart_ack        = 0;
 bool f_rf_read_data_ok = 0;
@@ -36,38 +35,38 @@ bool f_goto_sleep      = 0;
 bool f_force_deep      = 0;
 bool f_wakeup_prepare  = 0;
 
-uint8_t uart_bit_report_buf[32] = {0};
-uint8_t func_tab[32]            = {0};
+uint8_t  uart_bit_report_buf[32] = {0};
+uint8_t  func_tab[32]            = {0};
 #ifdef NKRO_ENABLE
-uint8_t bitkb_report_buf[32] = {0};
+    uint8_t  bitkb_report_buf[32]    = {0};
 #endif // NKRO_ENABLE
-uint8_t  bytekb_report_buf[8] = {0};
-uint16_t conkb_report         = 0;
-uint16_t syskb_report         = 0;
-uint8_t  sync_lost            = 0;
-uint8_t  disconnect_delay     = 0;
+uint8_t  bytekb_report_buf[8]    = {0};
+uint16_t conkb_report            = 0;
+uint16_t syskb_report            = 0;
+uint8_t  sync_lost               = 0;
+uint8_t  disconnect_delay        = 0;
 uint32_t uart_rpt_timer       = 0;
-
-uint8_t f_bit_send  = 0;
-uint8_t f_byte_send = 0;
 
 extern DEV_INFO_STRUCT dev_info;
 extern host_driver_t  *m_host_driver;
 extern uint8_t         host_mode;
-extern uint8_t         rf_blink_cnt;
 extern uint16_t        rf_link_show_time;
 extern uint16_t        rf_linking_time;
 extern uint16_t        no_act_time;
 extern bool            f_send_channel;
 extern bool            f_dial_sw_init_ok;
 
-void     uart_init(uint32_t baud); // qmk uart.c
-void     uart_send_report(uint8_t report_type, uint8_t *report_buf, uint8_t report_size);
-void     uart_send_bytes(uint8_t *Buffer, uint32_t Length);
-uint8_t  get_checksum(uint8_t *buf, uint8_t len);
-void     uart_receive_pro(void);
-void     m_break_all_key(void);
-uint16_t host_last_consumer_usage(void);
+uint8_t f_bit_send  = 0;
+uint8_t f_byte_send = 0;
+
+report_mouse_t mousekey_get_report(void);
+void           uart_init(uint32_t baud); // qmk uart.c
+void           uart_send_report(uint8_t report_type, uint8_t *report_buf, uint8_t report_size);
+void           uart_send_bytes(uint8_t *Buffer, uint32_t Length);
+uint8_t        get_checksum(uint8_t *buf, uint8_t len);
+void           uart_receive_pro(void);
+void           break_all_key(void);
+uint16_t       host_last_consumer_usage(void);
 
 /**
  * @brief Get variable uart key send repeat interval.
@@ -90,13 +89,15 @@ static uint8_t get_repeat_interval(void) {
 /**
  * @brief Uart auto nkey send
  */
-static void uart_auto_nkey_send(uint8_t *pre_bit_report, uint8_t *now_bit_report, uint8_t size) {
+bool f_bit_kb_act = 0;
+static void uart_auto_nkey_send(uint8_t *pre_bit_report, uint8_t *now_bit_report, uint8_t size)
+{
     uint8_t i, j, byte_index;
     uint8_t change_mask, offset_mask;
     uint8_t key_code = 0;
 
     f_byte_send = 0;
-    f_bit_send  = 0;
+    f_bit_send = 0;
 
     if (pre_bit_report[0] ^ now_bit_report[0]) {
         bytekb_report_buf[0] = now_bit_report[0];
@@ -149,15 +150,16 @@ static void uart_auto_nkey_send(uint8_t *pre_bit_report, uint8_t *now_bit_report
 }
 #endif // NKRO_ENABLE
 
+
 /**
  * @brief  Uart send keys report.
  */
-void uart_send_report_repeat(void) {
+void uart_send_report_repeat(void)
+{
     if (dev_info.link_mode == LINK_USB) return;
     keyboard_protocol = 1;
 
     uint8_t interval = get_repeat_interval();
-
     if (timer_elapsed32(uart_rpt_timer) >= interval) {
         uart_rpt_timer = timer_read32();
         if (no_act_time <= 25) {
@@ -214,7 +216,7 @@ void uart_send_system_report(report_extra_t *report) {
 void uart_send_report_keyboard(report_keyboard_t *report) {
     no_act_time      = 0;
     report->reserved = 0;
-    f_byte_send      = 1;
+    f_bit_send       = 1;
     uart_send_report(CMD_RPT_BYTE_KB, &report->mods, 8);
     memcpy(bytekb_report_buf, &report->mods, 8);
 }
@@ -238,8 +240,7 @@ void rf_protocol_receive(void) {
     uint8_t i, check_sum = 0;
 
     if (Usart_Mgr.RXDState == RX_Done) {
-        f_uart_ack = 1;
-        sync_lost  = 0;
+        sync_lost = 0;
 
         if (RX_LEN >= UART_MAX_LEN - 4) {
             Usart_Mgr.RXDState = RX_DATA_ERR;
@@ -257,6 +258,8 @@ void rf_protocol_receive(void) {
                 f_uart_ack = 1;
             }
         }
+
+        Usart_Mgr.RXCmd = RX_CMD;
 
         switch (RX_CMD) {
             case CMD_HAND: {
@@ -291,7 +294,8 @@ void rf_protocol_receive(void) {
 
                     if (Usart_Mgr.RXDBuf[8] <= 100) dev_info.rf_baterry = Usart_Mgr.RXDBuf[8];
                     if (dev_info.rf_charge & 0x01) dev_info.rf_baterry = 100;
-                } else {
+                }
+                else {
                     if (dev_info.rf_state != RF_INVAILD) {
                         if (error_cnt >= 5) {
                             error_cnt      = 0;
@@ -426,7 +430,7 @@ uint8_t uart_send_cmd(uint8_t cmd, uint8_t wait_ack, uint8_t delayms) {
             Usart_Mgr.TXDBuf[19] = 'V';
             Usart_Mgr.TXDBuf[20] = '2';
             Usart_Mgr.TXDBuf[21] = '-';
-            Usart_Mgr.TXDBuf[22] = get_checksum(Usart_Mgr.TXDBuf + 4, Usart_Mgr.TXDBuf[3]); // sum
+            Usart_Mgr.TXDBuf[22] = get_checksum(Usart_Mgr.TXDBuf + 4, Usart_Mgr.TXDBuf[3]);  // sum
             break;
         }
 
@@ -456,7 +460,7 @@ uint8_t uart_send_cmd(uint8_t cmd, uint8_t wait_ack, uint8_t delayms) {
             Usart_Mgr.TXDBuf[44] = 'g';
             Usart_Mgr.TXDBuf[46] = 'l';
             Usart_Mgr.TXDBuf[48] = 'e';
-            Usart_Mgr.TXDBuf[50] = get_checksum(Usart_Mgr.TXDBuf + 4, Usart_Mgr.TXDBuf[3]); // sum
+            Usart_Mgr.TXDBuf[50] = get_checksum(Usart_Mgr.TXDBuf + 4, Usart_Mgr.TXDBuf[3]);  // sum
             break;
         }
 
@@ -485,7 +489,7 @@ uint8_t uart_send_cmd(uint8_t cmd, uint8_t wait_ack, uint8_t delayms) {
     if (wait_ack) {
         while (wait_ack--) {
             wait_ms(1);
-            if (f_uart_ack) return TX_OK;
+            if (f_uart_ack || Usart_Mgr.RXCmd == cmd) return TX_OK;
         }
     } else {
         return TX_OK;
@@ -501,10 +505,8 @@ void dev_sts_sync(void) {
     static uint32_t interval_timer  = 0;
     static uint8_t  link_state_temp = RF_DISCONNECT;
 
-    if (timer_elapsed32(interval_timer) < 200)
-        return;
-    else
-        interval_timer = timer_read32();
+    if (timer_elapsed32(interval_timer) < 200) return;
+    interval_timer = timer_read32();
 
     if (f_rf_reset) {
         f_rf_reset = 0;
@@ -548,14 +550,17 @@ void dev_sts_sync(void) {
             if (link_state_temp != RF_CONNECT) {
                 link_state_temp   = RF_CONNECT;
                 rf_link_show_time = 0;
-                if (dev_info.link_mode == LINK_RF_24) {
-                    uart_send_cmd(CMD_SET_24G_NAME, 10, 30);
-                }
+                // if (dev_info.link_mode == LINK_RF_24) {
+                //     uart_send_cmd(CMD_SET_24G_NAME, 10, 30);
+                // }
             }
         }
     }
 
     uart_send_cmd(CMD_RF_STS_SYSC, 1, 1);
+
+    /* reset report repeat timer, might reduce repeat keys? */
+    //uart_rpt_timer = timer_read32();
 
     if (dev_info.link_mode != LINK_USB) {
         if (++sync_lost >= 5) {
@@ -565,23 +570,33 @@ void dev_sts_sync(void) {
     }
 }
 
-#define BAT_CFG_LEN 80
-const uint8_t battery_acfg_tab[BAT_CFG_LEN] = {
-    0x50, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xB4, 0xC2, 0xB4, 0xA8, 0x9B, 0x96, 0xF8, 0xF2, 0xF3, 0xC3, 0xA8, 0x8A, 0x65, 0x55, 0x49, 0x41, 0x39, 0x34, 0x2E, 0xA9, 0xAE, 0xD3, 0x28, 0xFF, 0xFF, 0xF1, 0xD3, 0xCE, 0xCB, 0xC8, 0xC3, 0xB8, 0xAE, 0xA7, 0xA8, 0xA6, 0x82, 0x6D, 0x65, 0x63, 0x69, 0x79, 0x8D, 0xA4, 0xB7, 0xC8, 0xA4, 0x16, 0x20, 0x00, 0xA7, 0x10, 0x00, 0xB1, 0x28, 0x00, 0x00, 0x00, 0x64, 0x43, 0xC0, 0x53, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x81,
-};
+// #define BAT_CFG_LEN     80
+// const uint8_t battery_acfg_tab[BAT_CFG_LEN] = {
+//     0x50, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+//     0xB4, 0xC2, 0xB4, 0xA8, 0x9B, 0x96, 0xF8, 0xF2,
+//     0xF3, 0xC3, 0xA8, 0x8A, 0x65, 0x55, 0x49, 0x41,
+//     0x39, 0x34, 0x2E, 0xA9, 0xAE, 0xD3, 0x28, 0xFF,
+//     0xFF, 0xF1, 0xD3, 0xCE, 0xCB, 0xC8, 0xC3, 0xB8,
+//     0xAE, 0xA7, 0xA8, 0xA6, 0x82, 0x6D, 0x65, 0x63,
+//     0x69, 0x79, 0x8D, 0xA4, 0xB7, 0xC8, 0xA4, 0x16,
+//     0x20, 0x00, 0xA7, 0x10, 0x00, 0xB1, 0x28, 0x00,
+//     0x00, 0x00, 0x64, 0x43, 0xC0, 0x53, 0x00, 0x00,
+//     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x81,
+// };
 
-void uart_send_bat_cfg(void) {
-    uint8_t buf[128] = {0};
+// void UART_Send_BatCfg(void)
+// {
+//     uint8_t buf[128] = {0};
 
-    buf[0] = UART_HEAD;
-    buf[1] = CMD_WBAT_CFG;
-    buf[2] = 0x01;
-    buf[3] = BAT_CFG_LEN;
-    memcpy(&buf[4], battery_acfg_tab, BAT_CFG_LEN);
-    buf[4 + BAT_CFG_LEN] = get_checksum(&buf[4], BAT_CFG_LEN);
-    uart_send_bytes(buf, BAT_CFG_LEN + 5);
-    wait_ms(50);
-}
+//     buf[0] = UART_HEAD;
+//     buf[1] = CMD_WBAT_CFG;
+//     buf[2] = 0x01;
+//     buf[3] = BAT_CFG_LEN;
+//     memcpy(&buf[4], battery_acfg_tab, BAT_CFG_LEN);
+//     buf[4 + BAT_CFG_LEN] = get_checksum(&buf[4], BAT_CFG_LEN);
+//     UART_Send_Bytes(buf, BAT_CFG_LEN + 5);
+//     wait_ms(50);
+// }
 
 /**
  * @brief Uart send bytes.
@@ -589,13 +604,18 @@ void uart_send_bat_cfg(void) {
  * @param Length data lenght
  */
 void uart_send_bytes(uint8_t *Buffer, uint32_t Length) {
+    Usart_Mgr.RXCmd = CMD_NULL; // reset before command sends.
+    // Restrict to one command per ms for stability?
+    if (timer_elapsed32(Usart_Mgr.TXLastCmdTm) < 1) {
+        wait_ms(1);
+    }
     gpio_write_pin_low(NRF_WAKEUP_PIN);
     wait_us(50);
-
     uart_transmit(Buffer, Length);
-
     wait_us(50 + Length * 30);
     gpio_write_pin_high(NRF_WAKEUP_PIN);
+    wait_us(200);
+    Usart_Mgr.TXLastCmdTm = timer_read32();
 }
 
 /**
@@ -642,31 +662,38 @@ void uart_send_report(uint8_t report_type, uint8_t *report_buf, uint8_t report_s
  */
 void uart_receive_pro(void) {
     static bool rcv_start = false;
+    static uint32_t rcv_timer = 0;
+
+    // Process at most once every ms between last iteration/transaction sent.
+    if (timer_elapsed32(Usart_Mgr.TXLastCmdTm) < 1 || timer_elapsed32(rcv_timer) < 1) return;
 
     // If there's any data, wait a bit first then process it all.
     // If you don't do this, you may lose sync, and crash the board.
-    if (!uart_available()) return;
-    wait_us(200);
+    if (uart_available()) {
+        wait_us(200);
+        // Receiving serial data from RF module
+        while (uart_available()) {
+            uint8_t byte = uart_read();
 
-    // Receiving serial data from RF module
-    while (uart_available()) {
-        uint8_t byte = uart_read();
-        if (byte == UART_HEAD) {
-            rcv_start = true;
-        }
-
-        if (rcv_start && Usart_Mgr.RXDLen < UART_MAX_LEN) {
-            Usart_Mgr.RXDBuf[Usart_Mgr.RXDLen++] = uart_read();
+            if (byte == UART_HEAD) { // valid UART transaction always begins with 0x5A
+                rcv_start = true;
+            }
+            // only read in what's valid. and drop the rest.
+            if (rcv_start && Usart_Mgr.RXDLen < UART_MAX_LEN) {
+                Usart_Mgr.RXDBuf[Usart_Mgr.RXDLen++] = byte;
+            }
         }
     }
+
 
     // Processing received serial port protocol
     if (rcv_start) {
         rcv_start          = false;
         Usart_Mgr.RXDState = RX_Done;
         rf_protocol_receive();
-        Usart_Mgr.RXDLen = 0;
+        Usart_Mgr.RXDLen   = 0;
     }
+    rcv_timer = timer_read32();
 }
 
 /**
@@ -699,7 +726,7 @@ void rf_device_init(void) {
         uart_send_cmd(CMD_HAND, 0, 20);
         wait_ms(5);
         uart_receive_pro(); // receive data
-        uart_receive_pro(); // parsing data
+        //uart_receive_pro(); // parsing data
         if (f_rf_hand_ok) break;
     }
 
@@ -709,7 +736,7 @@ void rf_device_init(void) {
         uart_send_cmd(CMD_READ_DATA, 0, 20);
         wait_ms(5);
         uart_receive_pro();
-        uart_receive_pro();
+        //uart_receive_pro();
         if (f_rf_read_data_ok) break;
     }
 
@@ -719,11 +746,11 @@ void rf_device_init(void) {
         uart_send_cmd(CMD_RF_STS_SYSC, 0, 20);
         wait_ms(5);
         uart_receive_pro();
-        uart_receive_pro();
+        //uart_receive_pro();
         if (f_rf_sts_sysc_ok) break;
     }
 
-    uart_send_bat_cfg();
+    //UART_Send_BatCfg();
 
     uart_send_cmd(CMD_SET_NAME, 10, 20);
 
