@@ -570,34 +570,6 @@ void dev_sts_sync(void) {
     }
 }
 
-// #define BAT_CFG_LEN     80
-// const uint8_t battery_acfg_tab[BAT_CFG_LEN] = {
-//     0x50, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-//     0xB4, 0xC2, 0xB4, 0xA8, 0x9B, 0x96, 0xF8, 0xF2,
-//     0xF3, 0xC3, 0xA8, 0x8A, 0x65, 0x55, 0x49, 0x41,
-//     0x39, 0x34, 0x2E, 0xA9, 0xAE, 0xD3, 0x28, 0xFF,
-//     0xFF, 0xF1, 0xD3, 0xCE, 0xCB, 0xC8, 0xC3, 0xB8,
-//     0xAE, 0xA7, 0xA8, 0xA6, 0x82, 0x6D, 0x65, 0x63,
-//     0x69, 0x79, 0x8D, 0xA4, 0xB7, 0xC8, 0xA4, 0x16,
-//     0x20, 0x00, 0xA7, 0x10, 0x00, 0xB1, 0x28, 0x00,
-//     0x00, 0x00, 0x64, 0x43, 0xC0, 0x53, 0x00, 0x00,
-//     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x81,
-// };
-
-// void UART_Send_BatCfg(void)
-// {
-//     uint8_t buf[128] = {0};
-
-//     buf[0] = UART_HEAD;
-//     buf[1] = CMD_WBAT_CFG;
-//     buf[2] = 0x01;
-//     buf[3] = BAT_CFG_LEN;
-//     memcpy(&buf[4], battery_acfg_tab, BAT_CFG_LEN);
-//     buf[4 + BAT_CFG_LEN] = get_checksum(&buf[4], BAT_CFG_LEN);
-//     UART_Send_Bytes(buf, BAT_CFG_LEN + 5);
-//     wait_ms(50);
-// }
-
 /**
  * @brief Uart send bytes.
  * @param Buffer data buf
@@ -726,7 +698,7 @@ void rf_device_init(void) {
         uart_send_cmd(CMD_HAND, 0, 20);
         wait_ms(5);
         uart_receive_pro(); // receive data
-        //uart_receive_pro(); // parsing data
+        uart_receive_pro(); // parsing data
         if (f_rf_hand_ok) break;
     }
 
@@ -736,7 +708,7 @@ void rf_device_init(void) {
         uart_send_cmd(CMD_READ_DATA, 0, 20);
         wait_ms(5);
         uart_receive_pro();
-        //uart_receive_pro();
+        uart_receive_pro();
         if (f_rf_read_data_ok) break;
     }
 
@@ -746,11 +718,9 @@ void rf_device_init(void) {
         uart_send_cmd(CMD_RF_STS_SYSC, 0, 20);
         wait_ms(5);
         uart_receive_pro();
-        //uart_receive_pro();
+        uart_receive_pro();
         if (f_rf_sts_sysc_ok) break;
     }
-
-    //UART_Send_BatCfg();
 
     uart_send_cmd(CMD_SET_NAME, 10, 20);
 

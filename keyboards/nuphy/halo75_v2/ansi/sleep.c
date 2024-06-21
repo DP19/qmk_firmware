@@ -28,13 +28,13 @@ extern bool             f_goto_sleep;
 extern bool             f_force_deep;
 extern bool             f_wakeup_prepare;
 
-extern void set_left_rgb(uint8_t r, uint8_t g, uint8_t b);
+void set_logo_rgb(uint8_t r, uint8_t g, uint8_t b);
 
 static void signal_sleep(uint8_t r, uint8_t g, uint8_t b) {
     // Visual cue for sleep/wake on side LED.
     pwr_rgb_led_on();
-    wait_ms(50); // give some time to ensure LED powers on.
-    set_left_rgb(r, g, b);
+    set_logo_rgb(r, g, b);
+    rgb_matrix_update_pwm_buffers();
     wait_ms(300);
 }
 
@@ -51,6 +51,7 @@ void deep_sleep_handle(void) {
 
     // flash white on wake up
     signal_sleep(0xff, 0xff, 0xff);
+    set_logo_rgb(0x00, 0x00, 0x00); // reset matrix
     /* If RF is not connected anymore you would lose the first keystroke.
        This is expected behavior as the connection is not there.
     */
@@ -94,7 +95,7 @@ void sleep_handle(void) {
     }
 
     // sleep check, won't reach here on deep sleep.
-    if (f_goto_sleep || f_wakeup_prepare) return;
+    if (f_wakeup_prepare) return;
 
     // sleep check
     if (dev_info.link_mode == LINK_USB) {

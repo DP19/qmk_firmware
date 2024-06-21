@@ -41,8 +41,6 @@ extern uint16_t        rf_link_show_time;
  */
 bool pre_process_record_kb(uint16_t keycode, keyrecord_t *record) {
     no_act_time     = 0;
-    rf_linking_time = 0;
-
     // wakeup check for light sleep/no sleep - fire this immediately to not lose wake keys.
     if (f_wakeup_prepare) {
         f_wakeup_prepare = 0;

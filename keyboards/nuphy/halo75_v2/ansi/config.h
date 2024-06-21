@@ -17,10 +17,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #define RGB_MATRIX_LED_FLUSH_LIMIT  25
-#define TAPPING_TERM                200
-#define TAP_CODE_DELAY              8
-#define DYNAMIC_KEYMAP_MACRO_DELAY  8
-
 
 #define DEV_MODE_PIN                C0
 #define SYS_MODE_PIN                C1
@@ -95,13 +91,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // use dedicated timer for wait_us interrupts instead on ChibiOS defaulting to minimum 100us even if you sleep for 10us
 #define WAIT_US_TIMER GPTD14
 
-// This is the size of the EEPROM for the custom VIA-specific data
-#define EECONFIG_KB_DATA_SIZE     7
+#define EECONFIG_KB_DATA_SIZE      7
 // Override in keymaps
 #define DEFAULT_SIDE_MODE_A        0
 #define DEFAULT_SIDE_MODE_B        3
 #define DEFAULT_SIDE_LIGHT         2
 #define DEFAULT_SIDE_SPEED         2
 #define DEFULAT_SIDE_RGB           1
-#define DEFAULT_SIDE_COLOUR        0 //5 is blue!!
+#define DEFAULT_SIDE_COLOUR        0
 #define RGB_MATRIX_DEFAULT_MODE    RGB_MATRIX_CUSTOM_position_mode

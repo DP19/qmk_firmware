@@ -85,8 +85,8 @@ typedef enum {
 #define HOST_RF_TYPE      2
 
 #define LINK_TIMEOUT      (100 * 60)
-#define LIGHT_SLEEP_DELAY (100 * 30)
-#define SLEEP_TIME_DELAY  (100 * 60)
+#define LIGHT_SLEEP_DELAY (100 * 120)
+#define SLEEP_TIME_DELAY  (100 * 360)
 #define POWER_DOWN_DELAY  (24)
 
 #define SIDE_INDEX 83
@@ -164,3 +164,5 @@ void    led_power_handle(void);
 void    user_set_rgb_color(int index, uint8_t red, uint8_t green, uint8_t blue);
 uint8_t uart_send_cmd(uint8_t cmd, uint8_t ack_cnt, uint8_t delayms);
 extern  void exit_light_sleep(void);
+
+extern void rgb_matrix_update_pwm_buffers(void);

@@ -240,11 +240,8 @@ void led_pwr_wake_handle(void) {
 void pwr_rgb_led_off(void) {
     if (!rgb_led_on) return;
     // LED power supply off
-    gpio_set_pin_output(DC_BOOST_PIN);
     gpio_write_pin_low(DC_BOOST_PIN);
-    gpio_set_pin_output(RGB_DRIVER_SDB1);
     gpio_write_pin_low(RGB_DRIVER_SDB1);
-    gpio_set_pin_output(RGB_DRIVER_SDB2);
     gpio_write_pin_low(RGB_DRIVER_SDB2);
     rgb_led_on = 0;
 }
@@ -252,12 +249,12 @@ void pwr_rgb_led_off(void) {
 void pwr_rgb_led_on(void) {
     if (rgb_led_on) return;
     // LED power supply on
-    gpio_set_pin_output(DC_BOOST_PIN);
     gpio_write_pin_high(DC_BOOST_PIN);
-    gpio_set_pin_output(RGB_DRIVER_SDB1);
     gpio_write_pin_high(RGB_DRIVER_SDB1);
-    gpio_set_pin_output(RGB_DRIVER_SDB2);
     gpio_write_pin_high(RGB_DRIVER_SDB2);
+    //clear matrix
+    rgb_matrix_set_color_all(0,0,0);
+    rgb_matrix_update_pwm_buffers();
     rgb_led_on = 1;
 }
 
