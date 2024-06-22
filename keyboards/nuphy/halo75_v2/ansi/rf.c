@@ -259,8 +259,6 @@ void rf_protocol_receive(void) {
             }
         }
 
-        Usart_Mgr.RXCmd = RX_CMD;
-
         switch (RX_CMD) {
             case CMD_HAND: {
                 f_rf_hand_ok = 1;
@@ -290,10 +288,9 @@ void rf_protocol_receive(void) {
                         dev_info.rf_led = Usart_Mgr.RXDBuf[6];
                     }
 
-                    dev_info.rf_charge = Usart_Mgr.RXDBuf[7];
-
-                    if (Usart_Mgr.RXDBuf[8] <= 100) dev_info.rf_baterry = Usart_Mgr.RXDBuf[8];
-                    if (dev_info.rf_charge & 0x01) dev_info.rf_baterry = 100;
+                    if ((Usart_Mgr.RXDBuf[7] & 0xfc) == 0) dev_info.rf_charge = Usart_Mgr.RXDBuf[7];
+                    if (Usart_Mgr.RXDBuf[8] <= 100) dev_info.rf_battery = Usart_Mgr.RXDBuf[8];
+                    // if (dev_info.rf_charge & 0x01) dev_info.rf_battery = 100;
                 }
                 else {
                     if (dev_info.rf_state != RF_INVAILD) {
@@ -489,7 +486,7 @@ uint8_t uart_send_cmd(uint8_t cmd, uint8_t wait_ack, uint8_t delayms) {
     if (wait_ack) {
         while (wait_ack--) {
             wait_ms(1);
-            if (f_uart_ack || Usart_Mgr.RXCmd == cmd) return TX_OK;
+            if (f_uart_ack) return TX_OK;
         }
     } else {
         return TX_OK;
@@ -576,18 +573,12 @@ void dev_sts_sync(void) {
  * @param Length data lenght
  */
 void uart_send_bytes(uint8_t *Buffer, uint32_t Length) {
-    Usart_Mgr.RXCmd = CMD_NULL; // reset before command sends.
-    // Restrict to one command per ms for stability?
-    if (timer_elapsed32(Usart_Mgr.TXLastCmdTm) < 1) {
-        wait_ms(1);
-    }
     gpio_write_pin_low(NRF_WAKEUP_PIN);
     wait_us(50);
     uart_transmit(Buffer, Length);
     wait_us(50 + Length * 30);
     gpio_write_pin_high(NRF_WAKEUP_PIN);
     wait_us(200);
-    Usart_Mgr.TXLastCmdTm = timer_read32();
 }
 
 /**
@@ -634,10 +625,6 @@ void uart_send_report(uint8_t report_type, uint8_t *report_buf, uint8_t report_s
  */
 void uart_receive_pro(void) {
     static bool rcv_start = false;
-    static uint32_t rcv_timer = 0;
-
-    // Process at most once every ms between last iteration/transaction sent.
-    if (timer_elapsed32(Usart_Mgr.TXLastCmdTm) < 1 || timer_elapsed32(rcv_timer) < 1) return;
 
     // If there's any data, wait a bit first then process it all.
     // If you don't do this, you may lose sync, and crash the board.
@@ -665,7 +652,6 @@ void uart_receive_pro(void) {
         rf_protocol_receive();
         Usart_Mgr.RXDLen   = 0;
     }
-    rcv_timer = timer_read32();
 }
 
 /**

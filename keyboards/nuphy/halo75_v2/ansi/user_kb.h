@@ -103,8 +103,6 @@ typedef struct
     uint8_t  RXDOverTime;
     uint8_t  TXDLenBack;
     uint8_t  TXDOffset;
-    uint8_t  RXCmd;
-    uint32_t TXLastCmdTm;
     uint8_t  TXDBuf[UART_MAX_LEN];
     uint8_t  RXDBuf[UART_MAX_LEN];
 } USART_MGR_STRUCT;
@@ -117,7 +115,7 @@ typedef struct
     uint8_t rf_state;
     uint8_t rf_charge;
     uint8_t rf_led;
-    uint8_t rf_baterry;
+    uint8_t rf_battery;
     uint8_t sys_sw_state;
 } DEV_INFO_STRUCT;
 

@@ -365,26 +365,6 @@ void sleep_sw_led_show(void)
     }
 }
 
-
-/**
- * @brief  host system led indicate.
- */
-void sys_led_show(void)
-{
-    if (dev_info.link_mode == LINK_USB) {
-        // caps lock led
-        // For some reason, turning off KEY_LOCK_ENABLE makes this light up on boot until you toggle caps lock key once
-        if (host_keyboard_led_state().caps_lock) {
-            set_left_rgb(colour_lib[4][0], colour_lib[4][1], colour_lib[4][2]);
-        }
-    }
-    else {
-        if (dev_info.rf_led & 0x02) {
-            set_left_rgb(colour_lib[4][0], colour_lib[4][1], colour_lib[4][2]);
-        }
-    }
-}
-
 /**
  * @brief  light_point_playing.
  * @param trend:
@@ -477,11 +457,11 @@ static void side_power_mode_show(void)
 
     if(key_pwm_tab[44] == 1)
     {
-        f_power_show = 0;
+        f_power_show      = 0;
         rf_link_show_time = 0;
-        bat_show_flag   = true;
-        f_charging = true;
-        bat_show_time  = timer_read32();
+        bat_show_flag     = 1;
+        f_charging        = 1;
+        bat_show_time     = timer_read32();
     }
 }
 
@@ -801,8 +781,8 @@ void bat_charging_design(uint8_t init, uint8_t r, uint8_t g, uint8_t b)
 /**
  * @brief  rf state indicate
  */
-#define RF_LED_LINK_PERIOD 500
-#define RF_LED_PAIR_PERIOD 250
+#define RF_LED_LINK_PERIOD 300
+#define RF_LED_PAIR_PERIOD 200
 void rf_led_show(void)
 {
     static uint32_t rf_blink_timer = 0;
@@ -919,7 +899,7 @@ void bat_num_led(uint8_t bat_percent) {
 
 void num_led_show(void) {
     static uint8_t num_bat_temp = 0;
-    num_bat_temp                = dev_info.rf_baterry;
+    num_bat_temp                = dev_info.rf_battery;
     bat_num_led(num_bat_temp);
 }
 
@@ -994,7 +974,7 @@ void bat_led_show(void)
         f_init        = 0;
         bat_show_time = timer_read32();
         charge_state  = dev_info.rf_charge;
-        bat_percent   = dev_info.rf_baterry;
+        bat_percent   = dev_info.rf_battery;
     }
 
     if (charge_state != dev_info.rf_charge) {
@@ -1026,9 +1006,9 @@ void bat_led_show(void)
         }
     }
 
-    if (bat_percent != dev_info.rf_baterry) {
+    if (bat_percent != dev_info.rf_battery) {
         if (timer_elapsed32(bat_per_debounce) > 1000) {
-            bat_percent = dev_info.rf_baterry;
+            bat_percent = dev_info.rf_battery;
         }
     }
     else {
@@ -1179,6 +1159,9 @@ void side_led_show(void)
     bat_led_show();
     sleep_sw_led_show();
     sys_sw_led_show();
-    sys_led_show();
+    //void sys_led_show(void); replace with the below since it works on the rf driver
+    if (host_keyboard_led_state().caps_lock) {
+        set_left_rgb(colour_lib[4][0], colour_lib[4][1], colour_lib[4][2]);
+    }
     rf_led_show();
 }

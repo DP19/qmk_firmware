@@ -24,7 +24,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 user_config_t user_config;
 DEV_INFO_STRUCT dev_info = {
-    .rf_baterry = 100,
+    .rf_battery = 100,
     .link_mode  = LINK_USB,
     .rf_state   = RF_IDLE,
 };
@@ -50,7 +50,7 @@ uint16_t      rf_dfu_press_delay    = 0;
 uint16_t      rf_sw_press_delay     = 0;
 uint16_t      rgb_test_press_delay  = 0;
 uint16_t      rgb_led_last_act      = 0;
-host_driver_t *m_host_driver        = 0;
+host_driver_t *m_host_driver        = NULL;
 
 extern bool               f_rf_new_adv_ok;
 extern report_keyboard_t *keyboard_report;

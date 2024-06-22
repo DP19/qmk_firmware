@@ -266,7 +266,6 @@ void keyboard_post_init_kb(void)
     wait_ms(500);
     rf_device_init();
 
-    break_all_key();
     eeconfig_read_kb_datablock(&user_config);
     dial_sw_fast_scan();
 }

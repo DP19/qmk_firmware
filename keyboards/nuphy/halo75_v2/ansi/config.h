@@ -67,7 +67,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define DRIVER_2_LED_TOTAL         64
 #define RGB_MATRIX_LED_COUNT       (DRIVER_1_LED_TOTAL + DRIVER_2_LED_TOTAL)
 
-#define RGB_MATRIX_DEFAULT_MODE     RGB_MATRIX_CUSTOM_position_mode
 #define RGB_DEFAULT_COLOUR          168
 
 #define IS31FL3733_SW_PULLUP PUR_05KR
@@ -77,17 +76,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define RGB_MATRIX_KEYPRESSES
 #define RGB_MATRIX_KEYRELEASES
 
-#define USB_SLEEP_ENABLED true
-
-#define DEBOUNCE_STEP 1
-
 #ifdef USB_SUSPEND_WAKEUP_DELAY
 #    undef USB_SUSPEND_WAKEUP_DELAY
 #endif
 #define USB_SUSPEND_WAKEUP_DELAY 50
 
 // debounce override - for clangd compliance - info_json.h - doesn't work most of the times
-#define DEBOUNCE 5
+#define DEBOUNCE 3
 // use dedicated timer for wait_us interrupts instead on ChibiOS defaulting to minimum 100us even if you sleep for 10us
 #define WAIT_US_TIMER GPTD14
 
