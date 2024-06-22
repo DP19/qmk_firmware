@@ -366,6 +366,16 @@ void sleep_sw_led_show(void)
 }
 
 /**
+ * @brief  host system led indicate.
+ */
+void sys_led_show(void)
+{
+    if (host_keyboard_led_state().caps_lock) {
+        set_left_rgb(colour_lib[4][0], colour_lib[4][1], colour_lib[4][2]);
+    }
+}
+
+/**
  * @brief  light_point_playing.
  * @param trend:
  * @param step:
@@ -457,11 +467,11 @@ static void side_power_mode_show(void)
 
     if(key_pwm_tab[44] == 1)
     {
-        f_power_show      = 0;
+        f_power_show = 0;
         rf_link_show_time = 0;
-        bat_show_flag     = 1;
-        f_charging        = 1;
-        bat_show_time     = timer_read32();
+        bat_show_flag   = true;
+        f_charging = true;
+        bat_show_time  = timer_read32();
     }
 }
 
@@ -781,8 +791,8 @@ void bat_charging_design(uint8_t init, uint8_t r, uint8_t g, uint8_t b)
 /**
  * @brief  rf state indicate
  */
-#define RF_LED_LINK_PERIOD 300
-#define RF_LED_PAIR_PERIOD 200
+#define RF_LED_LINK_PERIOD 500
+#define RF_LED_PAIR_PERIOD 250
 void rf_led_show(void)
 {
     static uint32_t rf_blink_timer = 0;
@@ -995,7 +1005,7 @@ void bat_led_show(void)
                 f_charging = false;
             }
         } else {
-            if (timer_elapsed32(bat_show_time) > 3000) {
+            if (timer_elapsed32(bat_show_time) > 2000) {
                 bat_show_flag = false;
             }
         }
@@ -1160,8 +1170,8 @@ void side_led_show(void)
     sleep_sw_led_show();
     sys_sw_led_show();
     //void sys_led_show(void); replace with the below since it works on the rf driver
-    if (host_keyboard_led_state().caps_lock) {
-        set_left_rgb(colour_lib[4][0], colour_lib[4][1], colour_lib[4][2]);
-    }
+    // if (host_keyboard_led_state().caps_lock) {
+    //     set_left_rgb(colour_lib[4][0], colour_lib[4][1], colour_lib[4][2]);
+    // }
     rf_led_show();
 }

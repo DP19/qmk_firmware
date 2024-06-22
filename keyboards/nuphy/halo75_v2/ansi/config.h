@@ -17,6 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #define RGB_MATRIX_LED_FLUSH_LIMIT  25
+#define TAP_CODE_DELAY              8
 
 #define DEV_MODE_PIN                C0
 #define SYS_MODE_PIN                C1
@@ -82,7 +83,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define USB_SUSPEND_WAKEUP_DELAY 50
 
 // debounce override - for clangd compliance - info_json.h - doesn't work most of the times
-#define DEBOUNCE 3
+#define DEBOUNCE 4
 // use dedicated timer for wait_us interrupts instead on ChibiOS defaulting to minimum 100us even if you sleep for 10us
 #define WAIT_US_TIMER GPTD14
 

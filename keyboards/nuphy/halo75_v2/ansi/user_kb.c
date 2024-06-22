@@ -50,7 +50,7 @@ uint16_t      rf_dfu_press_delay    = 0;
 uint16_t      rf_sw_press_delay     = 0;
 uint16_t      rgb_test_press_delay  = 0;
 uint16_t      rgb_led_last_act      = 0;
-host_driver_t *m_host_driver        = NULL;
+host_driver_t *m_host_driver        = 0;
 
 extern bool               f_rf_new_adv_ok;
 extern report_keyboard_t *keyboard_report;
