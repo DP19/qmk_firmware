@@ -284,6 +284,13 @@ void set_logo_rgb(uint8_t r, uint8_t g, uint8_t b) {
     }
 }
 
+// Used to flash only logo light
+void set_key_matrix_rgb_off(void) {
+    for (int i = 0; i <= SIDE_INDEX; i++) {
+        rgb_matrix_set_color(i, 0, 0, 0);
+    }
+}
+
 void set_all_side_off(void) {
     if (side_off) {
         return;
@@ -1169,9 +1176,6 @@ void side_led_show(void)
     bat_led_show();
     sleep_sw_led_show();
     sys_sw_led_show();
-    //void sys_led_show(void); replace with the below since it works on the rf driver
-    // if (host_keyboard_led_state().caps_lock) {
-    //     set_left_rgb(colour_lib[4][0], colour_lib[4][1], colour_lib[4][2]);
-    // }
+    sys_led_show();
     rf_led_show();
 }

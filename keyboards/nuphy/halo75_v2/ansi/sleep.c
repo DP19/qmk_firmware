@@ -29,11 +29,13 @@ extern bool             f_force_deep;
 extern bool             f_wakeup_prepare;
 
 void set_logo_rgb(uint8_t r, uint8_t g, uint8_t b);
+void set_key_matrix_rgb_off(void);
 
 static void signal_sleep(uint8_t r, uint8_t g, uint8_t b) {
     // Visual cue for sleep/wake on side LED.
     pwr_rgb_led_on();
     set_logo_rgb(r, g, b);
+    set_key_matrix_rgb_off();
     rgb_matrix_update_pwm_buffers();
     wait_ms(300);
 }
