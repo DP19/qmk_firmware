@@ -284,13 +284,6 @@ void set_logo_rgb(uint8_t r, uint8_t g, uint8_t b) {
     }
 }
 
-// Used to flash only logo light
-void set_key_matrix_rgb_off(void) {
-    for (int i = 0; i <= SIDE_INDEX; i++) {
-        rgb_matrix_set_color(i, 0, 0, 0);
-    }
-}
-
 void set_all_side_off(void) {
     if (side_off) {
         return;
@@ -798,8 +791,8 @@ void bat_charging_design(uint8_t init, uint8_t r, uint8_t g, uint8_t b)
 /**
  * @brief  rf state indicate
  */
-#define RF_LED_LINK_PERIOD 500
-#define RF_LED_PAIR_PERIOD 250
+#define RF_LED_LINK_PERIOD 300
+#define RF_LED_PAIR_PERIOD 200
 void rf_led_show(void)
 {
     static uint32_t rf_blink_timer = 0;

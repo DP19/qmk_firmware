@@ -175,7 +175,6 @@ void exit_deep_sleep(void) {
 
     // Power on LEDs
     led_pwr_wake_handle();
-    f_wakeup_prepare = 0; // if you press a key that wakes mcu but not again this is still set to true
 
     // Reinitialize the system clock
     stm32_clock_init();
