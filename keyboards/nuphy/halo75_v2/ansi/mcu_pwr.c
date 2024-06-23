@@ -163,8 +163,8 @@ void enter_deep_sleep(void) {
 
 void exit_deep_sleep(void) {
     // Matrix initialization
-    extern void matrix_init_pins(void);
-    matrix_init_pins();
+    extern void matrix_init(void);
+    matrix_init();
 
     // Restore IO working status
     gpio_set_pin_input_high(DEV_MODE_PIN); // PC0

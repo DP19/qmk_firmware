@@ -1,5 +1,4 @@
 VIA_ENABLE = yes
-LTO_ENABLE = yes
 
 # Disable Unused Features
 NKRO_ENABLE = no

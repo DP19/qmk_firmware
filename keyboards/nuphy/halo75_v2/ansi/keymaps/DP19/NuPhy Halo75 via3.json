@@ -1,5 +1,5 @@
 {
-  "name": "NuPhy Halo75",
+  "name": "NuPhy Halo75 V2",
   "vendorId": "0x19F5",
   "productId": "0x32F5",
   "matrix": {
@@ -136,51 +136,7 @@
               "label": "Effect",
               "type": "dropdown",
               "content": ["id_qmk_rgb_matrix_effect", 3, 2],
-              "options": [
-                "All Off",
-                "Solid Color",
-                "Gradient Up/Down",
-                "Gradient Left/Right",
-                "Breathing",
-                "Band Sat.",
-                "Band Val.",
-                "Pinwheel Sat.",
-                "Pinwheel Val.",
-                "Spiral Sat.",
-                "Spiral Val.",
-                "Cycle All",
-                "Cycle Left/Right",
-                "Cycle Up/Down",
-                "Rainbow Moving Chevron",
-                "Cycle Out/In",
-                "Cycle Out/In Dual",
-                "Cycle Pinwheel",
-                "Cycle Spiral",
-                "Dual Beacon",
-                "Rainbow Beacon",
-                "Rainbow Pinwheels",
-                "Raindrops",
-                "Jellybean Raindrops",
-                "Hue Breathing",
-                "Hue Pendulum",
-                "Hue Wave",
-                "Typing Heatmap",
-                "Digital Rain",
-                "Reactive Simple",
-                "Reactive",
-                "Reactive Wide",
-                "Reactive Multiwide",
-                "Reactive Cross",
-                "Reactive Multicross",
-                "Reactive Nexus",
-                "Reactive MultiNexus",
-                "Splash",
-                "MultiSplash",
-                "Solid Splash",
-                "Solid MultiSplash",
-                "game_mode",
-                "position_mode"
-              ]
+              "options": ["Solid Color", "Reactive Simple"]
             },
             {
               "showIf": "{id_qmk_rgb_matrix_effect} != 0",
@@ -227,32 +183,12 @@
       "title": "Link BLE_3"
     },
     {
-      "name": "Mac\nTask",
-      "title": "Mac Task"
-    },
-    {
-      "name": "Mac\nSearch",
-      "title": "Mac Search"
-    },
-    {
       "name": "Mac\nVoice",
-      "title": "Mac Siri Voice"
+      "title": "Mac Dictation"
     },
     {
-      "name": "Mac\nConsole",
-      "title": "Mac Console"
-    },
-    {
-      "name": "Mac\nDnt",
-      "title": "Mac Dnt"
-    },
-    {
-      "name": "Print\nWhole",
-      "title": "PrintWhole"
-    },
-    {
-      "name": "Print\nArea",
-      "title": "PrintArea"
+      "name": "MacDND",
+      "title": "Mac Do Not Disturb"
     },
     {
       "name": "Dev\nReset",
@@ -260,11 +196,19 @@
     },
     {
       "name": "Sleep\nMode",
-      "title": "Auto Sleep"
+      "title": "Toggle Sleep"
     },
     {
       "name": "Bat\nShow",
-      "title": "Battery Show"
+      "title": "Show Battery Side Light"
+    },
+    {
+      "name": "Bat\nNumber",
+      "title": "Show Battery Percent as Numbers"
+    },
+    {
+      "name": "RGB\nTest",
+      "title": "Test RGBs"
     },
     {
       "name": "Side\nLight+",
@@ -276,11 +220,11 @@
     },
     {
       "name": "Side\nMode_A",
-      "title": "Side Next Mode"
+      "title": "Side Mode A Next"
     },
     {
       "name": "Side\nMode_B",
-      "title": "Side Next Mode"
+      "title": "Side Mode B Next"
     },
     {
       "name": "Side\nColor",
