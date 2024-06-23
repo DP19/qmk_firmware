@@ -79,7 +79,7 @@ void sleep_handle(void) {
             deep_sleep = true;
             if (f_force_deep) {
                 // Deep is already set just skip the reset of the else checks
-            } else if (no_act_time < SLEEP_TIME_DELAY) {
+            } else if (no_act_time < (100 * 60 * user_config.deep_sleep_delay)) {
                 deep_sleep = false;
             } else if (dev_info.link_mode == LINK_USB && USB_DRIVER.state == USB_SUSPENDED) {
                 deep_sleep = 0;
@@ -112,7 +112,7 @@ void sleep_handle(void) {
         }
     } else if (dev_info.rf_state == RF_CONNECT) {
         rf_disconnect_time = 0;
-        if (no_act_time >= LIGHT_SLEEP_DELAY) {
+        if (no_act_time >= (100 * 60 * user_config.light_sleep_delay)) {
             f_goto_sleep = 1;
         }
     } else if (rf_linking_time >= LINK_TIMEOUT) {

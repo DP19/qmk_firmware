@@ -87,12 +87,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // use dedicated timer for wait_us interrupts instead on ChibiOS defaulting to minimum 100us even if you sleep for 10us
 #define WAIT_US_TIMER GPTD14
 
-#define EECONFIG_KB_DATA_SIZE      7
+#define EECONFIG_KB_DATA_SIZE 10
+
 // Override in keymaps
-#define DEFAULT_SIDE_MODE_A        0
-#define DEFAULT_SIDE_MODE_B        3
-#define DEFAULT_SIDE_LIGHT         2
-#define DEFAULT_SIDE_SPEED         2
-#define DEFULAT_SIDE_RGB           1
-#define DEFAULT_SIDE_COLOUR        0
+#define DEFAULT_SIDE_MODE_A          0
+#define DEFAULT_SIDE_MODE_B          3
+#define DEFAULT_SIDE_LIGHT           2
+#define DEFAULT_SIDE_SPEED           2
+#define DEFAULT_SIDE_RGB             1
+#define DEFAULT_SIDE_COLOUR          0
+#define DEFAULT_DEBOUNCE             5
+#define DEFAULT_LIGHT_SLEEP_DELAY    2
+#define DEFAULT_DEEP_SLEEP_DELAY     6
+#define DEFAULT_POWER_ON_ANIMATION   true
+#define DEFAULT_SLEEP_ENABLE         true
+
 #define RGB_MATRIX_DEFAULT_MODE    RGB_MATRIX_CUSTOM_position_mode

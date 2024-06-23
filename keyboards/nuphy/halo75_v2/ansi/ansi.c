@@ -22,9 +22,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 extern bool            f_rf_sw_press;
 extern bool            f_sleep_show;
+extern bool            f_power_togg_show;
 extern bool            f_dev_reset_press;
 extern bool            f_rf_dfu_press;
-extern bool            f_bat_num_show;
 extern bool            f_bat_hold;
 extern uint16_t        no_act_time;
 extern uint8_t         rf_sw_temp;
@@ -35,6 +35,10 @@ extern DEV_INFO_STRUCT dev_info;
 extern uint32_t        uart_rpt_timer;
 extern uint16_t        rf_link_show_time;
 
+extern bool            f_bat_num_show;
+extern bool            f_deb_show;
+extern bool            f_l_sleep_show;
+extern bool            f_d_sleep_show;
 
 /**
  * @brief  qmk pre process record - used to catch light sleep wake up faster
@@ -249,6 +253,64 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             f_bat_num_show = record->event.pressed;
             return false;
 
+        case DEB_I:
+            if (record->event.pressed) {
+                handle_debounce_change(1);
+            }
+            return false;
+
+        case DEB_D:
+            if (record->event.pressed) {
+                handle_debounce_change(0);
+            }
+            return false;
+
+        case DEB_SHOW:
+            f_deb_show = record->event.pressed;
+            return false;
+
+        case L_SLP_I:
+            if (record->event.pressed) {
+                handle_light_sleep_change(1);
+            }
+            return false;
+
+        case L_SLP_D:
+            if (record->event.pressed) {
+                handle_light_sleep_change(0);
+            }
+            return false;
+
+        case L_SLP_SHOW:
+            f_l_sleep_show = record->event.pressed;
+            return false;
+
+        case D_SLP_I:
+            if (record->event.pressed) {
+                handle_deep_sleep_change(1);
+            }
+            return false;
+
+        case D_SLP_D:
+            if (record->event.pressed) {
+                handle_deep_sleep_change(0);
+            }
+            return false;
+
+        case D_SLP_SHOW:
+            f_d_sleep_show = record->event.pressed;
+            return false;
+
+        case PWR_SHOW:
+            if (record->event.pressed) {
+                user_config.power_on_show = !user_config.power_on_show;
+                eeconfig_update_kb_datablock(&user_config);
+                f_power_togg_show = 1;
+            } else {
+                unregister_code16(keycode);
+            }
+            return false;
+
         default:
             return true;
     }
@@ -275,9 +337,8 @@ bool rgb_matrix_indicators_kb(void) {
         return false;
     }
 
-    if (f_bat_num_show) {
-        num_led_show();
-    }
+    // check if any show flags are on and display
+    stat_show();
 
     // light up corresponding BT mode key during connection and  link show time
     if (!f_power_show && (rf_blink_cnt || rf_link_show_time < RF_LINK_SHOW_TIME)) {

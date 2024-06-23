@@ -115,8 +115,6 @@ const uint8_t side_led_index_tab[45] =
 bool     f_charging        = 1;
 bool     bat_show_flag     = 1;
 bool     side_off          = 0;
-bool     show_sleep_signal = 0;
-bool     show_wake_signal  = 0;
 uint16_t side_play_cnt     = 0;
 uint32_t side_play_timer   = 0;
 uint8_t  side_line         = 45;
@@ -132,6 +130,7 @@ extern uint16_t        rf_link_show_time;
 extern bool            f_bat_hold;
 extern bool            f_sys_show;
 extern bool            f_sleep_show;
+extern bool            f_power_togg_show;
 extern uint16_t        rgb_led_last_act;
 
 #define IS31FL3733_PWM_REGISTER_COUNT 192
@@ -332,16 +331,24 @@ void sys_sw_led_show(void)
 
 /**
  * @brief  sleep enable or disable indicate
+ Highjack for power ani toggle
  */
-void sleep_sw_led_show(void)
+void sw_led_show(void)
 {
-    static uint32_t sleep_show_timer = 0;
+    static uint32_t show_timer = 0;
     static bool sleep_show_flag      = false;
+    static bool power_togg_flag      = false;
 
     if (f_sleep_show) {
         f_sleep_show     = false;
-        sleep_show_timer = timer_read32();  // store time of last refresh
+        show_timer = timer_read32();  // store time of last refresh
         sleep_show_flag  = true;
+    }
+
+    if (f_power_togg_show) {
+        f_power_togg_show = false;
+        show_timer = timer_read32();  // store time of last refresh
+        power_togg_flag = true;
     }
 
     if (sleep_show_flag) {
@@ -354,13 +361,30 @@ void sleep_sw_led_show(void)
             g_temp = 0x00;
             b_temp = 0x00;
         }
-        if ((timer_elapsed32(sleep_show_timer) / 500) % 2 == 0) {
+    }
+
+    if (power_togg_flag) {
+        if (user_config.power_on_show) {
+            r_temp = 0x00;
+            g_temp = SIDE_BLINK_LIGHT;
+            b_temp = 0x00;
+        } else {
+            r_temp = 0xff;
+            g_temp = 0x00;
+            b_temp = 0x00;
+        }
+    }
+
+
+    if (sleep_show_flag || power_togg_flag) {
+        if ((timer_elapsed32(show_timer) / 500) % 2 == 0) {
             set_left_rgb(r_temp, g_temp, b_temp);
         } else {
             set_left_rgb(0x00, 0x00, 0x00);
         }
-        if (timer_elapsed32(sleep_show_timer) >= (3000-50)) {
+        if (timer_elapsed32(show_timer) >= (3000-50)) {
             sleep_show_flag = false;
+            power_togg_flag = false;
         }
     }
 }
@@ -429,44 +453,49 @@ uint8_t is_side_rgb_on(uint8_t index)
 }
 
 
-static void side_power_mode_show(void)
-{
-    if (side_play_cnt <= side_speed_table[0][user_config.side_speed])
-        return;
-    else
-        side_play_cnt -= side_speed_table[0][user_config.side_speed];
-    if (side_play_cnt > 20) side_play_cnt = 0;
+static void side_power_mode_show(void) {
+    if (user_config.power_on_show) {
+        if (side_play_cnt <= side_speed_table[0][user_config.side_speed])
+            return;
+        else
+            side_play_cnt -= side_speed_table[0][user_config.side_speed];
+        if (side_play_cnt > 20) side_play_cnt = 0;
 
-    if(power_play_index <= 45) {
-        key_pwm_tab[power_play_index] = 0xff;
-        power_play_index++;
-    }
+        if(power_play_index <= 45) {
+            key_pwm_tab[power_play_index] = 0xff;
+            power_play_index++;
+        }
 
-    uint8_t i;
+        uint8_t i;
 
-    for (i = 0; i < 45; i++) {
+        for (i = 0; i < 45; i++) {
 
-        r_temp = colour_lib[user_config.side_colour][0];
-        g_temp = colour_lib[user_config.side_colour][1];
-        b_temp = colour_lib[user_config.side_colour][2];
+            r_temp = colour_lib[user_config.side_colour][0];
+            g_temp = colour_lib[user_config.side_colour][1];
+            b_temp = colour_lib[user_config.side_colour][2];
 
-        count_rgb_light(key_pwm_tab[i]);
-        count_rgb_light(side_light_table[2]);
-        user_set_side_rgb_color(side_led_index_tab[i], r_temp, g_temp, b_temp);
-    }
+            count_rgb_light(key_pwm_tab[i]);
+            count_rgb_light(side_light_table[2]);
+            user_set_side_rgb_color(side_led_index_tab[i], r_temp, g_temp, b_temp);
+        }
 
-    for(i=0; i<45; i++)
-	{
-		if(key_pwm_tab[i] & 0x80)		key_pwm_tab[i] -= 8;
-		else if(key_pwm_tab[i] & 0x40)	key_pwm_tab[i] -= 6;
-		else if(key_pwm_tab[i] & 0x20)	key_pwm_tab[i] -= 4;
-		else if(key_pwm_tab[i] & 0x10)	key_pwm_tab[i] -= 3;
-		else if(key_pwm_tab[i] & 0x08)	key_pwm_tab[i] -= 2;
-		else if(key_pwm_tab[i]) 		key_pwm_tab[i]--;
-	}
+        for(i=0; i<45; i++) {
+    		if(key_pwm_tab[i] & 0x80)		key_pwm_tab[i] -= 8;
+    		else if(key_pwm_tab[i] & 0x40)	key_pwm_tab[i] -= 6;
+    		else if(key_pwm_tab[i] & 0x20)	key_pwm_tab[i] -= 4;
+    		else if(key_pwm_tab[i] & 0x10)	key_pwm_tab[i] -= 3;
+    		else if(key_pwm_tab[i] & 0x08)	key_pwm_tab[i] -= 2;
+    		else if(key_pwm_tab[i]) 		key_pwm_tab[i]--;
+	    }
 
-    if(key_pwm_tab[44] == 1)
-    {
+        if(key_pwm_tab[44] == 1) {
+            f_power_show = 0;
+            rf_link_show_time = 0;
+            bat_show_flag   = true;
+            f_charging = true;
+            bat_show_time  = timer_read32();
+        }
+    } else {
         f_power_show = 0;
         rf_link_show_time = 0;
         bat_show_flag   = true;
@@ -1167,7 +1196,7 @@ void side_led_show(void)
     }
 
     bat_led_show();
-    sleep_sw_led_show();
+    sw_led_show();
     sys_sw_led_show();
     sys_led_show();
     rf_led_show();

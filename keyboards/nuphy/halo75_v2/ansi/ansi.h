@@ -29,6 +29,17 @@ enum custom_keycodes {
     SIDE_HUI,
     SIDE_SPI,
     SIDE_SPD,
+
+    DEB_I,
+    DEB_D,
+    DEB_SHOW,
+    L_SLP_I,
+    L_SLP_D,
+    L_SLP_SHOW,
+    D_SLP_I,
+    D_SLP_D,
+    D_SLP_SHOW,
+    PWR_SHOW,
 };
 
 #define SYS_PRT                 G(S(KC_3))

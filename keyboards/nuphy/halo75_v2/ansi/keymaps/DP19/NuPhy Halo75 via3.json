@@ -136,7 +136,10 @@
               "label": "Effect",
               "type": "dropdown",
               "content": ["id_qmk_rgb_matrix_effect", 3, 2],
-              "options": ["Solid Color", "Reactive Simple"]
+              "options": [
+                ["Solid Color", 1],
+                ["Reactive Simple", 29]
+              ]
             },
             {
               "showIf": "{id_qmk_rgb_matrix_effect} != 0",
@@ -150,6 +153,166 @@
               "label": "Color",
               "type": "color",
               "content": ["id_qmk_rgb_matrix_color", 3, 4]
+            }
+          ]
+        },
+        {
+          "label": "Halo Light",
+          "content": [
+            {
+              "label": "Boot Animation",
+              "type": "toggle",
+              "content": ["id_power_on_animation", 0, 13]
+            },
+            {
+              "label": "Effect",
+              "type": "dropdown",
+              "content": ["id_side_mode_a", 0, 0],
+              "options": ["Wawe", "Mix", "New", "Breath", "Static"]
+            },
+            {
+              "label": "Group",
+              "type": "dropdown",
+              "content": ["id_side_mode_b", 0, 1],
+              "options": [
+                "All Off",
+                "Top Left",
+                "Top Left+Right",
+                "All On",
+                "Bottom Only",
+                "Bottom + Top Left",
+                "Bottom + Top Left+Right"
+              ]
+            },
+            {
+              "label": "Brightness",
+              "type": "range",
+              "showIf": "{id_side_mode_b} != 0",
+              "content": ["id_side_light_brightness", 0, 2],
+              "options": [0, 4]
+            },
+            {
+              "label": "Speed",
+              "showIf": "{id_side_mode_a} != 4 && {id_side_mode_b} != 0",
+              "type": "dropdown",
+              "content": ["id_side_light_speed", 0, 3],
+              "options": ["Fastest", "Fast", "Med", "Slow", "Slowest"]
+            },
+            {
+              "label": "Color",
+              "showIf": "{id_side_mode_a} != 2 && {id_side_mode_b} != 0",
+              "type": "dropdown",
+              "content": ["id_side_light_color", 0, 4],
+              "options": [
+                "Red",
+                "Orange",
+                "Yellow",
+                "Green",
+                "Cyan",
+                "Blue",
+                "Purple",
+                "Light-Purple"
+              ]
+            },
+            {
+              "label": "Color",
+              "showIf": "{id_side_mode_a} == 2 && {id_side_mode_b} != 0",
+              "type": "dropdown",
+              "content": ["id_side_light_color", 0, 4],
+              "options": ["One", "Two", "Three"]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Custom Configs",
+      "content": [
+        {
+          "label": "Debounce",
+          "content": [
+            {
+              "label": "Debounce",
+              "type": "dropdown",
+              "options": [
+                "0ms",
+                "1ms",
+                "2ms",
+                "3ms",
+                "4ms",
+                "5ms",
+                "6ms",
+                "7ms",
+                "8ms",
+                "9ms",
+                "10ms"
+              ],
+              "content": ["id_debounce", 0, 10]
+            }
+          ]
+        },
+        {
+          "label": "Sleep",
+          "content": [
+            {
+              "label": "Sleep Enable",
+              "type": "toggle",
+              "content": ["id_sleep_toggle", 0, 14]
+            },
+            {
+              "label": "Light Sleep Delay (set this at least 1m less than deep)",
+              "showIf": "{id_sleep_toggle} == 1",
+              "type": "dropdown",
+              "options": [
+                "1m",
+                "2m",
+                "3m",
+                "4m",
+                "5m",
+                "6m",
+                "7m",
+                "8m",
+                "9m",
+                "10m",
+                "11m",
+                "12m",
+                "13m",
+                "14m",
+                "15m",
+                "16m",
+                "17m",
+                "18m",
+                "19m"
+              ],
+              "content": ["id_light_sleep_delay", 0, 11]
+            },
+            {
+              "label": "Deep Sleep Delay (set this at least 1m more than light)",
+              "showIf": "{id_sleep_toggle} == 1",
+              "type": "dropdown",
+              "options": [
+                "1m",
+                "2m",
+                "3m",
+                "4m",
+                "5m",
+                "6m",
+                "7m",
+                "8m",
+                "9m",
+                "10m",
+                "11m",
+                "12m",
+                "13m",
+                "14m",
+                "15m",
+                "16m",
+                "17m",
+                "18m",
+                "19m",
+                "20m"
+              ],
+              "content": ["id_deep_sleep_delay", 0, 12]
             }
           ]
         }
@@ -189,6 +352,10 @@
     {
       "name": "MacDND",
       "title": "Mac Do Not Disturb"
+    },
+    {
+      "name": "WinLock",
+      "title": "Win Key Lock"
     },
     {
       "name": "Dev\nReset",
@@ -237,6 +404,46 @@
     {
       "name": "Side\nSlow",
       "title": "Side Speed -"
+    },
+    {
+      "name": "Debounce+",
+      "title": "Debounce Speed ms+"
+    },
+    {
+      "name": "Debounce-",
+      "title": "Debounce Speed ms-"
+    },
+    {
+      "name": "Debounce\nShow",
+      "title": "Show Debounce Speed ms"
+    },
+    {
+      "name": "Light\nSleep+",
+      "title": "Light Sleep Delay m+"
+    },
+    {
+      "name": "Light\nSleep-",
+      "title": "Light Sleep Delay m-"
+    },
+    {
+      "name": "Light\nSleep\nShow",
+      "title": "Show Light Sleep Delay m"
+    },
+    {
+      "name": "Deep\nSleep+",
+      "title": "Deep Sleep Delay m+"
+    },
+    {
+      "name": "Deep\nSleep-",
+      "title": "Deep Sleep Delay m-"
+    },
+    {
+      "name": "Deep\nSleep\nShow",
+      "title": "Show Deep Sleep Delay m"
+    },
+    {
+      "name": "Power\nAnimation\nToggle",
+      "title": "Toggle Startup Animation"
     }
   ]
 }

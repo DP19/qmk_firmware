@@ -85,8 +85,6 @@ typedef enum {
 #define HOST_RF_TYPE      2
 
 #define LINK_TIMEOUT      (100 * 60)
-#define LIGHT_SLEEP_DELAY (100 * 120)
-#define SLEEP_TIME_DELAY  (100 * 360)
 #define POWER_DOWN_DELAY  (24)
 
 #define SIDE_INDEX 83
@@ -95,6 +93,9 @@ typedef enum {
 #define DEV_RESET_PRESS_DELAY   30
 #define RF_DFU_PRESS_DELAY      30
 #define RGB_TEST_PRESS_DELAY    30
+
+#define DEBOUNCE_MAX 10
+#define SLEEP_MAX 20
 
 typedef struct
 {
@@ -121,16 +122,21 @@ typedef struct
 
 typedef struct
 {
-    uint8_t side_mode_a;
-    uint8_t side_mode_b;
-    uint8_t side_light;
-    uint8_t side_speed;
-    uint8_t side_rgb;
-    uint8_t side_colour;
-    bool sleep_enable :1;
+    uint8_t side_mode_a; // Halo Effect
+    uint8_t side_mode_b; // Halo Group
+    uint8_t side_light;  // Halo Brightness
+    uint8_t side_speed;  // Halo Speed
+    uint8_t side_rgb;    // Halo On/Off - Not toggled directly
+    uint8_t side_colour; // Halo Color
+    uint8_t debounce;
+    uint8_t light_sleep_delay;
+    uint8_t deep_sleep_delay;
+    bool    power_on_show :1;
+    bool    sleep_enable :1;
 } user_config_t;
 
 _Static_assert(sizeof(user_config_t) == EECONFIG_KB_DATA_SIZE, "Mismatch in keyboard EECONFIG stored data");
+
 
 extern uint8_t f_power_show; // running power on lights
 extern uint8_t rf_blink_cnt; // connection blink count
@@ -160,6 +166,10 @@ void    dial_sw_fast_scan(void);
 void    timer_pro(void);
 void    led_power_handle(void);
 void    user_set_rgb_color(int index, uint8_t red, uint8_t green, uint8_t blue);
+void    stat_show(void);
+void    handle_debounce_change(uint8_t dir);
+void    handle_light_sleep_change(uint8_t dir);
+void    handle_deep_sleep_change(uint8_t dir);
 uint8_t uart_send_cmd(uint8_t cmd, uint8_t ack_cnt, uint8_t delayms);
 extern  void exit_light_sleep(void);
 

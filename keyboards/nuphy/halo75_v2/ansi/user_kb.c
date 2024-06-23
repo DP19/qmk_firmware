@@ -16,6 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "user_kb.h"
+#include <stdint.h>
 #include "ansi.h"
 #include "config.h"
 #include "usb_main.h"
@@ -31,13 +32,18 @@ DEV_INFO_STRUCT dev_info = {
 bool f_bat_hold         = 0;
 bool f_sys_show         = 0;
 bool f_sleep_show       = 0;
+bool f_power_togg_show  = 0;
 bool f_send_channel     = 0;
 bool f_dial_sw_init_ok  = 0;
 bool f_rf_sw_press      = 0;
 bool f_dev_reset_press  = 0;
 bool f_rf_dfu_press     = 0;
 bool f_rgb_test_press   = 0;
+
 bool f_bat_num_show     = 0;
+bool f_deb_show         = 0;
+bool f_l_sleep_show     = 0;
+bool f_d_sleep_show     = 0;
 
 uint8_t       rf_blink_cnt          = 0;
 uint8_t       rf_sw_temp            = 0;
@@ -464,13 +470,81 @@ void led_power_handle(void) {
 }
 
 void eeconfig_init_kb_datablock(void) {
-    // eeprom has been reset by user or flash
-    user_config.side_mode_a  = DEFAULT_SIDE_MODE_A;  /*SIDE_OFF*/
-    user_config.side_mode_b  = DEFAULT_SIDE_MODE_B;
-    user_config.side_light   = DEFAULT_SIDE_LIGHT; /*LIGHT_OFF*/
-    user_config.side_speed   = DEFAULT_SIDE_SPEED;
-    user_config.side_rgb     = DEFULAT_SIDE_RGB;
-    user_config.side_colour  = DEFAULT_SIDE_COLOUR;
-    user_config.sleep_enable = true;
+    // Built in function that only gets called on first init or flash
+    // Highjacking for via support since it doesn't save to it's EEPROM section explicty for user calls
+    user_config.side_mode_a       = DEFAULT_SIDE_MODE_A;  /*SIDE_OFF*/
+    user_config.side_mode_b       = DEFAULT_SIDE_MODE_B;
+    user_config.side_light        = DEFAULT_SIDE_LIGHT; /*LIGHT_OFF*/
+    user_config.side_speed        = DEFAULT_SIDE_SPEED;
+    user_config.side_rgb          = DEFAULT_SIDE_RGB;
+    user_config.side_colour       = DEFAULT_SIDE_COLOUR;
+    user_config.debounce          = DEBOUNCE;
+    user_config.light_sleep_delay = DEFAULT_LIGHT_SLEEP_DELAY;
+    user_config.deep_sleep_delay  = DEFAULT_DEEP_SLEEP_DELAY;
+    user_config.power_on_show     = DEFAULT_POWER_ON_ANIMATION;
+    user_config.sleep_enable      = DEFAULT_SLEEP_ENABLE;
+
+    eeconfig_update_kb_datablock(&user_config);
+}
+
+void stat_show_rgb(uint8_t stat) {
+    uint8_t tens = stat / 10;
+    uint8_t ones = stat % 10;
+
+    for (uint8_t i = 1; i <= tens; i++) {
+        user_set_rgb_color(i, 0xff, 0xff, 0xff);
+    }
+
+    for (uint8_t i = 1; i <= ones; i++) {
+        user_set_rgb_color(16 + i, 0xff, 0xff, 0xff);
+    }
+}
+
+void stat_show(void) {
+    if (f_bat_num_show) num_led_show();
+    if (f_deb_show) stat_show_rgb(user_config.debounce);
+    if (f_l_sleep_show) stat_show_rgb(user_config.light_sleep_delay);
+    if (f_d_sleep_show) stat_show_rgb(user_config.deep_sleep_delay);
+}
+
+
+void handle_debounce_change(uint8_t dir) {
+    if (dir) {
+        if (user_config.debounce == DEBOUNCE_MAX) return;
+        user_config.debounce++;
+    } else {
+        if (user_config.debounce == 0) return;
+        user_config.debounce--;
+    }
+    eeconfig_update_kb_datablock(&user_config);
+}
+
+void handle_light_sleep_change(uint8_t dir) {
+    if (dir) {
+        if (user_config.light_sleep_delay == SLEEP_MAX || user_config.light_sleep_delay == (user_config.deep_sleep_delay - 1)) return;
+        user_config.light_sleep_delay++;
+    } else {
+        if (user_config.light_sleep_delay == 1) return;
+        user_config.light_sleep_delay--;
+    }
+    eeconfig_update_kb_datablock(&user_config);
+}
+
+void handle_deep_sleep_change(uint8_t dir) {
+    if (dir) {
+        if (user_config.deep_sleep_delay == SLEEP_MAX) return;
+        user_config.deep_sleep_delay++;
+    } else {
+        if (user_config.deep_sleep_delay == 2) {
+            if (user_config.light_sleep_delay != 1) {
+                user_config.light_sleep_delay = 1;
+            }
+        } else {
+            user_config.deep_sleep_delay--;
+            if (user_config.light_sleep_delay == user_config.deep_sleep_delay) {
+                user_config.light_sleep_delay--;
+            }
+        }
+    }
     eeconfig_update_kb_datablock(&user_config);
 }

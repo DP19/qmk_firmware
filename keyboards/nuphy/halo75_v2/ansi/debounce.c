@@ -9,6 +9,7 @@ releasing a key, that state is pushed after no changes occur for DEBOUNCE millis
 #include "timer.h"
 #include <stdlib.h>
 #include "ansi.h"
+#include "user_kb.h"
 
 #ifdef PROTOCOL_CHIBIOS
 #    if CH_CFG_USE_MEMCORE == FALSE
@@ -29,6 +30,8 @@ static fast_timer_t        last_time;
 static bool                counters_need_update;
 static bool                matrix_need_update;
 static bool                cooked_changed;
+
+extern user_config_t   user_config;
 
 static void update_debounce_counters_and_transfer_if_expired(matrix_row_t raw[], matrix_row_t cooked[], uint8_t num_rows, uint8_t elapsed_time);
 static void transfer_matrix_values(matrix_row_t raw[], matrix_row_t cooked[], uint8_t num_rows);
@@ -131,9 +134,9 @@ static void transfer_matrix_values(matrix_row_t raw[], matrix_row_t cooked[], ui
                         // key-down: eager
                         cooked[row] ^= col_mask;
                         cooked_changed         = true;
-                        debounce_pointer->time = DEBOUNCE;
+                        debounce_pointer->time = user_config.debounce;
                     } else {
-                        debounce_pointer->time = DEBOUNCE;
+                        debounce_pointer->time = user_config.debounce;
                     }
                 }
             } else if (debounce_pointer->time != DEBOUNCE_ELAPSED) {
