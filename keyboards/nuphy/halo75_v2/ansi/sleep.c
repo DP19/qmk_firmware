@@ -20,13 +20,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "usb_main.h"
 #include "mcu_pwr.h"
 
-extern user_config_t    user_config;
-extern DEV_INFO_STRUCT  dev_info;
-extern uint16_t         rf_linking_time;
-extern uint16_t         no_act_time;
-extern bool             f_goto_sleep;
-extern bool             f_force_deep;
-extern bool             f_wakeup_prepare;
+extern user_config_t   user_config;
+extern DEV_INFO_STRUCT dev_info;
+extern uint16_t        rf_linking_time;
+extern uint16_t        no_act_time;
+extern bool            f_goto_sleep;
+extern bool            f_force_deep;
+extern bool            f_wakeup_prepare;
 
 void set_logo_rgb(uint8_t r, uint8_t g, uint8_t b);
 void set_key_matrix_rgb_off(void);
@@ -64,9 +64,9 @@ void deep_sleep_handle(void) {
  * @brief  Sleep Handle.
  */
 void sleep_handle(void) {
-    static uint32_t delay_step_timer = 0;
+    static uint32_t delay_step_timer     = 0;
     static uint8_t  usb_suspend_debounce = 0;
-    static uint32_t rf_disconnect_time = 0;
+    static uint32_t rf_disconnect_time   = 0;
 
     /* 50ms interval */
     if (timer_elapsed32(delay_step_timer) < 50) return;
@@ -122,8 +122,8 @@ void sleep_handle(void) {
         rf_disconnect_time++;
         if (rf_disconnect_time > 5 * 20) {
             rf_disconnect_time = 0;
-            f_goto_sleep = 1;
-            f_force_deep = 1;
+            f_goto_sleep       = 1;
+            f_force_deep       = 1;
         }
     }
 }

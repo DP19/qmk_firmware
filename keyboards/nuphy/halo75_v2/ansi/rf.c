@@ -15,15 +15,15 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "user_kb.h"
-#include "uart.h"  // qmk uart.h
+#include "uart.h" // qmk uart.h
 #include "rf_driver.h"
 
 USART_MGR_STRUCT Usart_Mgr;
-#define RX_SBYTE    Usart_Mgr.RXDBuf[0]
-#define RX_CMD      Usart_Mgr.RXDBuf[1]
-#define RX_ACK      Usart_Mgr.RXDBuf[2]
-#define RX_LEN      Usart_Mgr.RXDBuf[3]
-#define RX_DAT      Usart_Mgr.RXDBuf[4]
+#define RX_SBYTE Usart_Mgr.RXDBuf[0]
+#define RX_CMD Usart_Mgr.RXDBuf[1]
+#define RX_ACK Usart_Mgr.RXDBuf[2]
+#define RX_LEN Usart_Mgr.RXDBuf[3]
+#define RX_DAT Usart_Mgr.RXDBuf[4]
 
 bool f_uart_ack        = 0;
 bool f_rf_read_data_ok = 0;
@@ -35,16 +35,16 @@ bool f_goto_sleep      = 0;
 bool f_force_deep      = 0;
 bool f_wakeup_prepare  = 0;
 
-uint8_t  uart_bit_report_buf[32] = {0};
-uint8_t  func_tab[32]            = {0};
+uint8_t uart_bit_report_buf[32] = {0};
+uint8_t func_tab[32]            = {0};
 #ifdef NKRO_ENABLE
-    uint8_t  bitkb_report_buf[32]    = {0};
+uint8_t bitkb_report_buf[32] = {0};
 #endif // NKRO_ENABLE
-uint8_t  bytekb_report_buf[8]    = {0};
-uint16_t conkb_report            = 0;
-uint16_t syskb_report            = 0;
-uint8_t  sync_lost               = 0;
-uint8_t  disconnect_delay        = 0;
+uint8_t  bytekb_report_buf[8] = {0};
+uint16_t conkb_report         = 0;
+uint16_t syskb_report         = 0;
+uint8_t  sync_lost            = 0;
+uint8_t  disconnect_delay     = 0;
 uint32_t uart_rpt_timer       = 0;
 
 extern DEV_INFO_STRUCT dev_info;
@@ -89,15 +89,14 @@ static uint8_t get_repeat_interval(void) {
 /**
  * @brief Uart auto nkey send
  */
-bool f_bit_kb_act = 0;
-static void uart_auto_nkey_send(uint8_t *pre_bit_report, uint8_t *now_bit_report, uint8_t size)
-{
+bool        f_bit_kb_act = 0;
+static void uart_auto_nkey_send(uint8_t *pre_bit_report, uint8_t *now_bit_report, uint8_t size) {
     uint8_t i, j, byte_index;
     uint8_t change_mask, offset_mask;
     uint8_t key_code = 0;
 
     f_byte_send = 0;
-    f_bit_send = 0;
+    f_bit_send  = 0;
 
     if (pre_bit_report[0] ^ now_bit_report[0]) {
         bytekb_report_buf[0] = now_bit_report[0];
@@ -150,12 +149,10 @@ static void uart_auto_nkey_send(uint8_t *pre_bit_report, uint8_t *now_bit_report
 }
 #endif // NKRO_ENABLE
 
-
 /**
  * @brief  Uart send keys report.
  */
-void uart_send_report_repeat(void)
-{
+void uart_send_report_repeat(void) {
     if (dev_info.link_mode == LINK_USB) return;
     keyboard_protocol = 1;
 
@@ -291,8 +288,7 @@ void rf_protocol_receive(void) {
                     if ((Usart_Mgr.RXDBuf[7] & 0xfc) == 0) dev_info.rf_charge = Usart_Mgr.RXDBuf[7];
                     if (Usart_Mgr.RXDBuf[8] <= 100) dev_info.rf_battery = Usart_Mgr.RXDBuf[8];
                     // if (dev_info.rf_charge & 0x01) dev_info.rf_battery = 100;
-                }
-                else {
+                } else {
                     if (dev_info.rf_state != RF_INVAILD) {
                         if (error_cnt >= 5) {
                             error_cnt      = 0;
@@ -427,7 +423,7 @@ uint8_t uart_send_cmd(uint8_t cmd, uint8_t wait_ack, uint8_t delayms) {
             Usart_Mgr.TXDBuf[19] = 'V';
             Usart_Mgr.TXDBuf[20] = '2';
             Usart_Mgr.TXDBuf[21] = '-';
-            Usart_Mgr.TXDBuf[22] = get_checksum(Usart_Mgr.TXDBuf + 4, Usart_Mgr.TXDBuf[3]);  // sum
+            Usart_Mgr.TXDBuf[22] = get_checksum(Usart_Mgr.TXDBuf + 4, Usart_Mgr.TXDBuf[3]); // sum
             break;
         }
 
@@ -457,7 +453,7 @@ uint8_t uart_send_cmd(uint8_t cmd, uint8_t wait_ack, uint8_t delayms) {
             Usart_Mgr.TXDBuf[44] = 'g';
             Usart_Mgr.TXDBuf[46] = 'l';
             Usart_Mgr.TXDBuf[48] = 'e';
-            Usart_Mgr.TXDBuf[50] = get_checksum(Usart_Mgr.TXDBuf + 4, Usart_Mgr.TXDBuf[3]);  // sum
+            Usart_Mgr.TXDBuf[50] = get_checksum(Usart_Mgr.TXDBuf + 4, Usart_Mgr.TXDBuf[3]); // sum
             break;
         }
 
@@ -557,7 +553,7 @@ void dev_sts_sync(void) {
     uart_send_cmd(CMD_RF_STS_SYSC, 1, 1);
 
     /* reset report repeat timer, might reduce repeat keys? */
-    //uart_rpt_timer = timer_read32();
+    // uart_rpt_timer = timer_read32();
 
     if (dev_info.link_mode != LINK_USB) {
         if (++sync_lost >= 5) {
@@ -644,13 +640,12 @@ void uart_receive_pro(void) {
         }
     }
 
-
     // Processing received serial port protocol
     if (rcv_start) {
         rcv_start          = false;
         Usart_Mgr.RXDState = RX_Done;
         rf_protocol_receive();
-        Usart_Mgr.RXDLen   = 0;
+        Usart_Mgr.RXDLen = 0;
     }
 }
 

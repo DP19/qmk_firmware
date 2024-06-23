@@ -23,46 +23,46 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "mcu_pwr.h"
 #include "rf_driver.h"
 
-user_config_t user_config;
+user_config_t   user_config;
 DEV_INFO_STRUCT dev_info = {
     .rf_battery = 100,
     .link_mode  = LINK_USB,
     .rf_state   = RF_IDLE,
 };
-bool f_bat_hold         = 0;
-bool f_sys_show         = 0;
-bool f_sleep_show       = 0;
-bool f_power_togg_show  = 0;
-bool f_send_channel     = 0;
-bool f_dial_sw_init_ok  = 0;
-bool f_rf_sw_press      = 0;
-bool f_dev_reset_press  = 0;
-bool f_rf_dfu_press     = 0;
-bool f_rgb_test_press   = 0;
+bool f_bat_hold        = 0;
+bool f_sys_show        = 0;
+bool f_sleep_show      = 0;
+bool f_power_togg_show = 0;
+bool f_send_channel    = 0;
+bool f_dial_sw_init_ok = 0;
+bool f_rf_sw_press     = 0;
+bool f_dev_reset_press = 0;
+bool f_rf_dfu_press    = 0;
+bool f_rgb_test_press  = 0;
 
-bool f_bat_num_show     = 0;
-bool f_deb_show         = 0;
-bool f_l_sleep_show     = 0;
-bool f_d_sleep_show     = 0;
+bool f_bat_num_show = 0;
+bool f_deb_show     = 0;
+bool f_l_sleep_show = 0;
+bool f_d_sleep_show = 0;
 
-uint8_t       rf_blink_cnt          = 0;
-uint8_t       rf_sw_temp            = 0;
-uint8_t       host_mode;
-uint16_t      rf_linking_time       = 0;
-uint16_t      rf_link_show_time     = 0;
-uint16_t      no_act_time           = 0;
-uint16_t      dev_reset_press_delay = 0;
-uint16_t      rf_dfu_press_delay    = 0;
-uint16_t      rf_sw_press_delay     = 0;
-uint16_t      rgb_test_press_delay  = 0;
-uint16_t      rgb_led_last_act      = 0;
-host_driver_t *m_host_driver        = 0;
+uint8_t        rf_blink_cnt = 0;
+uint8_t        rf_sw_temp   = 0;
+uint8_t        host_mode;
+uint16_t       rf_linking_time       = 0;
+uint16_t       rf_link_show_time     = 0;
+uint16_t       no_act_time           = 0;
+uint16_t       dev_reset_press_delay = 0;
+uint16_t       rf_dfu_press_delay    = 0;
+uint16_t       rf_sw_press_delay     = 0;
+uint16_t       rgb_test_press_delay  = 0;
+uint16_t       rgb_led_last_act      = 0;
+host_driver_t *m_host_driver         = 0;
 
 extern bool               f_rf_new_adv_ok;
 extern report_keyboard_t *keyboard_report;
 #ifdef NKRO_ENABLE
-    extern report_nkro_t *nkro_report;
-    extern uint8_t bitkb_report_buf[32];
+extern report_nkro_t *nkro_report;
+extern uint8_t        bitkb_report_buf[32];
 #endif // NKRO_ENABLE
 extern uint8_t bytekb_report_buf[8];
 
@@ -102,8 +102,7 @@ void gpio_init(void) {
 /**
  * @brief  long press key process.
  */
-void long_press_key(void)
-{
+void long_press_key(void) {
     static uint32_t long_press_timer = 0;
 
     if (timer_elapsed32(long_press_timer) < 100) return;
@@ -131,14 +130,14 @@ void long_press_key(void)
 
     if (f_dev_reset_press) {
         dev_reset_press_delay++;
-        if (dev_reset_press_delay >= DEV_RESET_PRESS_DELAY)  {
+        if (dev_reset_press_delay >= DEV_RESET_PRESS_DELAY) {
             f_dev_reset_press = 0;
 
             if (dev_info.link_mode != LINK_USB) {
                 if (dev_info.link_mode != LINK_RF_24) {
-                    dev_info.link_mode      = LINK_BT_1;
-                    dev_info.ble_channel    = LINK_BT_1;
-                    dev_info.rf_channel     = LINK_BT_1;
+                    dev_info.link_mode   = LINK_BT_1;
+                    dev_info.ble_channel = LINK_BT_1;
+                    dev_info.rf_channel  = LINK_BT_1;
                 }
             } else {
                 dev_info.ble_channel = LINK_BT_1;
@@ -156,17 +155,16 @@ void long_press_key(void)
             device_reset_show();
             device_reset_init();
 
-
             if (dev_info.sys_sw_state == SYS_SW_MAC) {
-                default_layer_set(1 << 0);  // MAC
-                #ifdef NKRO_ENABLE
-                    keymap_config.nkro = 0;
-                #endif // NKRO_ENABLE
+                default_layer_set(1 << 0); // MAC
+#ifdef NKRO_ENABLE
+                keymap_config.nkro = 0;
+#endif // NKRO_ENABLE
             } else {
-                default_layer_set(1 << 2);  // WIN
-                #ifdef NKRO_ENABLE
-                    keymap_config.nkro = 1;
-                #endif // NKRO_ENABLE
+                default_layer_set(1 << 2); // WIN
+#ifdef NKRO_ENABLE
+                keymap_config.nkro = 1;
+#endif // NKRO_ENABLE
             }
         }
     } else {
@@ -199,18 +197,18 @@ void long_press_key(void)
  */
 void break_all_key(void) {
     uint8_t report_buf[NKRO_REPORT_BITS + 1];
-    bool nkro_temp = keymap_config.nkro;
+    bool    nkro_temp = keymap_config.nkro;
 
     clear_weak_mods();
     clear_mods();
     clear_keyboard();
 
-    #ifdef NKRO_ENABLE
-        keymap_config.nkro = 1;
-        memset(nkro_report, 0, sizeof(report_nkro_t));
-        host_nkro_send(nkro_report);
-        wait_ms(10);
-    #endif // NRKO_ENABLE
+#ifdef NKRO_ENABLE
+    keymap_config.nkro = 1;
+    memset(nkro_report, 0, sizeof(report_nkro_t));
+    host_nkro_send(nkro_report);
+    wait_ms(10);
+#endif // NRKO_ENABLE
 
     keymap_config.nkro = 0;
     memset(keyboard_report, 0, sizeof(report_keyboard_t));
@@ -220,18 +218,18 @@ void break_all_key(void) {
     keymap_config.nkro = nkro_temp;
 
     if (dev_info.link_mode != LINK_USB) {
-        #ifdef NKRO_ENABLE
-            memset(report_buf, 0, 16);
-            uart_send_report(CMD_RPT_BIT_KB, report_buf, 16);
-            wait_ms(10);
-        #endif // NKRO_ENABLE
+#ifdef NKRO_ENABLE
+        memset(report_buf, 0, 16);
+        uart_send_report(CMD_RPT_BIT_KB, report_buf, 16);
+        wait_ms(10);
+#endif // NKRO_ENABLE
         uart_send_report(CMD_RPT_BYTE_KB, report_buf, 8);
         wait_ms(10);
     }
 
-    #ifdef NKRO_ENABLE
-        memset(bitkb_report_buf, 0, sizeof(bitkb_report_buf));
-    #endif // NKRO_ENABLE
+#ifdef NKRO_ENABLE
+    memset(bitkb_report_buf, 0, sizeof(bitkb_report_buf));
+#endif // NKRO_ENABLE
     memset(bytekb_report_buf, 0, sizeof(bytekb_report_buf));
 }
 
@@ -244,15 +242,14 @@ static void switch_dev_link(uint8_t mode) {
     break_all_key();
 
     dev_info.link_mode = mode;
-    dev_info.rf_state = RF_IDLE;
-    f_send_channel    = 1;
+    dev_info.rf_state  = RF_IDLE;
+    f_send_channel     = 1;
 
     if (mode == LINK_USB) {
         host_mode = HOST_USB_TYPE;
         host_set_driver(m_host_driver);
         rf_link_show_time = 0;
-    }
-    else {
+    } else {
         host_mode = HOST_RF_TYPE;
         host_set_driver(&rf_host_driver);
     }
@@ -261,13 +258,12 @@ static void switch_dev_link(uint8_t mode) {
 /**
  * @brief  scan dial switch.
  */
-void dial_sw_scan(void)
-{
-    uint8_t dial_scan               = 0;
-    static uint8_t dial_save        = 0xf0;
-    static uint8_t debounce         = 0;
+void dial_sw_scan(void) {
+    uint8_t         dial_scan       = 0;
+    static uint8_t  dial_save       = 0xf0;
+    static uint8_t  debounce        = 0;
     static uint32_t dial_scan_timer = 0;
-    static bool flag_power_on       = true;
+    static bool     flag_power_on   = true;
 
     if (!flag_power_on) {
         if (timer_elapsed32(dial_scan_timer) < 20) return;
@@ -282,12 +278,12 @@ void dial_sw_scan(void)
 
     if (dial_save != dial_scan) {
         break_all_key();
-        no_act_time         = 0;
-        rf_linking_time     = 0;
+        no_act_time     = 0;
+        rf_linking_time = 0;
 
         dial_save         = dial_scan;
-        debounce            = 25;
-        f_dial_sw_init_ok   = 0;
+        debounce          = 25;
+        f_dial_sw_init_ok = 0;
         return;
     } else if (debounce) {
         debounce--;
@@ -309,9 +305,9 @@ void dial_sw_scan(void)
             f_sys_show = 1;
             default_layer_set(1 << 2);
             dev_info.sys_sw_state = SYS_SW_WIN;
-            #ifdef NKRO_ENABLE
-                keymap_config.nkro = 1;
-            #endif // NKRO_ENABLE
+#ifdef NKRO_ENABLE
+            keymap_config.nkro = 1;
+#endif // NKRO_ENABLE
             break_all_key();
         }
     } else {
@@ -337,19 +333,18 @@ void dial_sw_scan(void)
 /**
  * @brief  power on scan dial switch.
  */
- //dial_sw_fast_scan
+// dial_sw_fast_scan
 void dial_sw_fast_scan(void) {
-
-    uint8_t dial_scan_dev = 0;
-    uint8_t dial_scan_sys = 0;
+    uint8_t dial_scan_dev  = 0;
+    uint8_t dial_scan_sys  = 0;
     uint8_t dial_check_dev = 0;
     uint8_t dial_check_sys = 0;
-    uint8_t debounce = 0;
+    uint8_t debounce       = 0;
 
     gpio_set_pin_input_high(DEV_MODE_PIN);
     gpio_set_pin_input_high(SYS_MODE_PIN);
 
-    for(debounce=0; debounce<10; debounce++) {
+    for (debounce = 0; debounce < 10; debounce++) {
         dial_scan_dev = 0;
         dial_scan_sys = 0;
         if (readPin(DEV_MODE_PIN)) {
@@ -364,10 +359,10 @@ void dial_sw_fast_scan(void) {
             dial_scan_sys = 0;
         }
 
-        if ((dial_scan_dev != dial_check_dev)||(dial_scan_sys != dial_check_sys)) {
+        if ((dial_scan_dev != dial_check_dev) || (dial_scan_sys != dial_check_sys)) {
             dial_check_dev = dial_scan_dev;
             dial_check_sys = dial_scan_sys;
-            debounce = 0;
+            debounce       = 0;
         }
         wait_ms(1);
     }
@@ -387,9 +382,9 @@ void dial_sw_fast_scan(void) {
             break_all_key();
             default_layer_set(1 << 2);
             dev_info.sys_sw_state = SYS_SW_WIN;
-            #ifdef NKRO_ENABLE
-                keymap_config.nkro = 1;
-            #endif // NKRO_ENABLE
+#ifdef NKRO_ENABLE
+            keymap_config.nkro = 1;
+#endif // NKRO_ENABLE
         }
     } else {
         if (dev_info.sys_sw_state != SYS_SW_MAC) {
@@ -401,15 +396,12 @@ void dial_sw_fast_scan(void) {
     }
 }
 
-
-
 /**
     @brief  timer process.
  */
-void timer_pro(void)
-{
+void timer_pro(void) {
     static uint32_t interval_timer = 0;
-    static bool f_first            = true;
+    static bool     f_first        = true;
 
     if (f_first) {
         if (host_get_driver()) {
@@ -430,7 +422,6 @@ void timer_pro(void)
     if (rf_linking_time < 0xffff) rf_linking_time++;
 
     if (rgb_led_last_act < 0xffff) rgb_led_last_act++;
-
 }
 
 /**
@@ -472,13 +463,13 @@ void led_power_handle(void) {
 void eeconfig_init_kb_datablock(void) {
     // Built in function that only gets called on first init or flash
     // Highjacking for via support since it doesn't save to it's EEPROM section explicty for user calls
-    user_config.side_mode_a       = DEFAULT_SIDE_MODE_A;  /*SIDE_OFF*/
+    user_config.side_mode_a       = DEFAULT_SIDE_MODE_A; /*SIDE_OFF*/
     user_config.side_mode_b       = DEFAULT_SIDE_MODE_B;
     user_config.side_light        = DEFAULT_SIDE_LIGHT; /*LIGHT_OFF*/
     user_config.side_speed        = DEFAULT_SIDE_SPEED;
     user_config.side_rgb          = DEFAULT_SIDE_RGB;
     user_config.side_colour       = DEFAULT_SIDE_COLOUR;
-    user_config.debounce          = DEBOUNCE;
+    user_config.debounce          = DEFAULT_DEBOUNCE;
     user_config.light_sleep_delay = DEFAULT_LIGHT_SLEEP_DELAY;
     user_config.deep_sleep_delay  = DEFAULT_DEEP_SLEEP_DELAY;
     user_config.power_on_show     = DEFAULT_POWER_ON_ANIMATION;
@@ -506,7 +497,6 @@ void stat_show(void) {
     if (f_l_sleep_show) stat_show_rgb(user_config.light_sleep_delay);
     if (f_d_sleep_show) stat_show_rgb(user_config.deep_sleep_delay);
 }
-
 
 void handle_debounce_change(uint8_t dir) {
     if (dir) {

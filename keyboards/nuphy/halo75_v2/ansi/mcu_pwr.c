@@ -25,10 +25,10 @@ static const pin_t col_pins[MATRIX_COLS] = MATRIX_COL_PINS;
 
 extern DEV_INFO_STRUCT dev_info;
 
-bool        f_usb_deinit         = 0;
-static bool rgb_led_powered_off  = 0;
-static bool rgb_led_on           = 0;
-static bool tim6_enabled         = false;
+bool        f_usb_deinit        = 0;
+static bool rgb_led_powered_off = 0;
+static bool rgb_led_on          = 0;
+static bool tim6_enabled        = false;
 
 /** ================================================================
  * @brief   Turn Off USB
@@ -222,7 +222,7 @@ void exit_light_sleep(void) {
 
 void led_pwr_sleep_handle(void) {
     // reset the flags.
-    rgb_led_powered_off  = 0;
+    rgb_led_powered_off = 0;
 
     // power off leds if they were enabled
     if (is_rgb_led_on()) {
@@ -252,8 +252,8 @@ void pwr_rgb_led_on(void) {
     gpio_write_pin_high(DC_BOOST_PIN);
     gpio_write_pin_high(RGB_DRIVER_SDB1);
     gpio_write_pin_high(RGB_DRIVER_SDB2);
-    //clear matrix
-    rgb_matrix_set_color_all(0,0,0);
+    // clear matrix
+    rgb_matrix_set_color_all(0, 0, 0);
     rgb_matrix_update_pwm_buffers();
     rgb_led_on = 1;
 }

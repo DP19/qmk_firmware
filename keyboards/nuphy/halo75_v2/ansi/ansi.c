@@ -35,16 +35,16 @@ extern DEV_INFO_STRUCT dev_info;
 extern uint32_t        uart_rpt_timer;
 extern uint16_t        rf_link_show_time;
 
-extern bool            f_bat_num_show;
-extern bool            f_deb_show;
-extern bool            f_l_sleep_show;
-extern bool            f_d_sleep_show;
+extern bool f_bat_num_show;
+extern bool f_deb_show;
+extern bool f_l_sleep_show;
+extern bool f_d_sleep_show;
 
 /**
  * @brief  qmk pre process record - used to catch light sleep wake up faster
  */
 bool pre_process_record_kb(uint16_t keycode, keyrecord_t *record) {
-    no_act_time     = 0;
+    no_act_time = 0;
     // wakeup check for light sleep/no sleep - fire this immediately to not lose wake keys.
     if (f_wakeup_prepare) {
         f_wakeup_prepare = 0;
@@ -317,12 +317,10 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     return true;
 }
 
-
 /**
    qmk keyboard post init
  */
-void keyboard_post_init_kb(void)
-{
+void keyboard_post_init_kb(void) {
     gpio_init();
     rf_uart_init();
     wait_ms(500);
@@ -363,9 +361,7 @@ bool rgb_matrix_indicators_kb(void) {
 /**
    housekeeping_task_user
  */
-void housekeeping_task_kb(void)
-{
-
+void housekeeping_task_kb(void) {
     timer_pro();
 
     uart_receive_pro();
@@ -381,5 +377,4 @@ void housekeeping_task_kb(void)
     side_led_show();
 
     sleep_handle();
-
 }

@@ -16,8 +16,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
 
-#define RGB_MATRIX_LED_FLUSH_LIMIT  25
-#define TAP_CODE_DELAY              8
 
 #define DEV_MODE_PIN                C0
 #define SYS_MODE_PIN                C1
@@ -80,7 +78,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifdef USB_SUSPEND_WAKEUP_DELAY
 #    undef USB_SUSPEND_WAKEUP_DELAY
 #endif
-#define USB_SUSPEND_WAKEUP_DELAY 50
 
 // debounce override - for clangd compliance - info_json.h - doesn't work most of the times
 #define DEBOUNCE 4
@@ -96,7 +93,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define DEFAULT_SIDE_SPEED           2
 #define DEFAULT_SIDE_RGB             1
 #define DEFAULT_SIDE_COLOUR          0
-#define DEFAULT_DEBOUNCE             5
+#define DEFAULT_DEBOUNCE             DEBOUNCE
 #define DEFAULT_LIGHT_SLEEP_DELAY    2
 #define DEFAULT_DEEP_SLEEP_DELAY     6
 #define DEFAULT_POWER_ON_ANIMATION   true

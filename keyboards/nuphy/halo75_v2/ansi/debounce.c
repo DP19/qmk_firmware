@@ -31,7 +31,7 @@ static bool                counters_need_update;
 static bool                matrix_need_update;
 static bool                cooked_changed;
 
-extern user_config_t   user_config;
+extern user_config_t user_config;
 
 static void update_debounce_counters_and_transfer_if_expired(matrix_row_t raw[], matrix_row_t cooked[], uint8_t num_rows, uint8_t elapsed_time);
 static void transfer_matrix_values(matrix_row_t raw[], matrix_row_t cooked[], uint8_t num_rows);
@@ -128,7 +128,7 @@ static void transfer_matrix_values(matrix_row_t raw[], matrix_row_t cooked[], ui
             if (delta & col_mask) {
                 if (debounce_pointer->time == DEBOUNCE_ELAPSED) {
                     debounce_pointer->pressed = (raw[row] & col_mask);
-                    counters_need_update = true;
+                    counters_need_update      = true;
 
                     if (debounce_pointer->pressed) {
                         // key-down: eager

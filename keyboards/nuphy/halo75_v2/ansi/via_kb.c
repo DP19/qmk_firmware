@@ -18,7 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "user_kb.h"
 #include "via_kb.h"
 
-//https://www.caniusevia.com/docs/custom_ui#command-handlers
+// https://www.caniusevia.com/docs/custom_ui#command-handlers
 void via_config_set_value(uint8_t *data) {
     // data = [ value_id, value_data ]
 
@@ -59,7 +59,7 @@ void via_config_set_value(uint8_t *data) {
     }
 }
 
-//https://www.caniusevia.com/docs/custom_ui#command-handlers
+// https://www.caniusevia.com/docs/custom_ui#command-handlers
 void via_config_get_value(uint8_t *data) {
     uint8_t *value_id   = &(data[0]);
     uint8_t *value_data = &(data[1]);
@@ -96,7 +96,6 @@ void via_config_get_value(uint8_t *data) {
             break;
     }
 }
-
 
 // https://www.caniusevia.com/docs/custom_ui#command-handlers
 void via_custom_value_command_kb(uint8_t *data, uint8_t length) {
