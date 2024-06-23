@@ -511,7 +511,7 @@ void handle_debounce_change(uint8_t dir) {
 
 void handle_light_sleep_change(uint8_t dir) {
     if (dir) {
-        if (user_config.light_sleep_delay == SLEEP_MAX || user_config.light_sleep_delay == (user_config.deep_sleep_delay - 1)) return;
+        if (user_config.light_sleep_delay == SLEEP_MAX) return;
         user_config.light_sleep_delay++;
     } else {
         if (user_config.light_sleep_delay == 1) return;
@@ -525,16 +525,8 @@ void handle_deep_sleep_change(uint8_t dir) {
         if (user_config.deep_sleep_delay == SLEEP_MAX) return;
         user_config.deep_sleep_delay++;
     } else {
-        if (user_config.deep_sleep_delay == 2) {
-            if (user_config.light_sleep_delay != 1) {
-                user_config.light_sleep_delay = 1;
-            }
-        } else {
-            user_config.deep_sleep_delay--;
-            if (user_config.light_sleep_delay == user_config.deep_sleep_delay) {
-                user_config.light_sleep_delay--;
-            }
-        }
+        if (user_config.deep_sleep_delay == 1) return;
+        user_config.deep_sleep_delay--;
     }
     eeconfig_update_kb_datablock(&user_config);
 }
