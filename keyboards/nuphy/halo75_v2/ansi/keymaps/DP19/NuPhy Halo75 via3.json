@@ -255,13 +255,12 @@
           "label": "Sleep",
           "content": [
             {
-              "label": "Sleep Enable",
+              "label": "Deep Sleep Enable",
               "type": "toggle",
               "content": ["id_sleep_toggle", 0, 14]
             },
             {
-              "label": "Light Sleep Delay (set this at least 1m less than deep)",
-              "showIf": "{id_sleep_toggle} == 1",
+              "label": "Light Sleep Delay (If more than deep sleep, will deep sleep immediately)",
               "type": "dropdown",
               "options": [
                 "1m",
@@ -282,12 +281,13 @@
                 "16m",
                 "17m",
                 "18m",
-                "19m"
+                "19m",
+                "20m"
               ],
               "content": ["id_light_sleep_delay", 0, 11]
             },
             {
-              "label": "Deep Sleep Delay (set this at least 1m more than light)",
+              "label": "Deep Sleep Delay",
               "showIf": "{id_sleep_toggle} == 1",
               "type": "dropdown",
               "options": [
@@ -418,6 +418,10 @@
       "title": "Show Debounce Speed ms"
     },
     {
+      "name": "Debounce\nReset",
+      "title": "Reset Debounce Speed"
+    },
+    {
       "name": "Light\nSleep+",
       "title": "Light Sleep Delay m+"
     },
@@ -430,6 +434,10 @@
       "title": "Show Light Sleep Delay m"
     },
     {
+      "name": "Light\nSleep\nReset",
+      "title": "Reset Light Sleep Delay"
+    },
+    {
       "name": "Deep\nSleep+",
       "title": "Deep Sleep Delay m+"
     },
@@ -440,6 +448,10 @@
     {
       "name": "Deep\nSleep\nShow",
       "title": "Show Deep Sleep Delay m"
+    },
+    {
+      "name": "Deep\nSleep\nReset",
+      "title": "Reset Deep Sleep Delay"
     },
     {
       "name": "Power\nAnimation\nToggle",

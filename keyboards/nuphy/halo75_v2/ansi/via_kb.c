@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "user_kb.h"
 #include "via_kb.h"
 
+#ifdef VIA_ENABLE
 // https://www.caniusevia.com/docs/custom_ui#command-handlers
 void via_config_set_value(uint8_t *data) {
     // data = [ value_id, value_data ]
@@ -135,3 +136,4 @@ void via_custom_value_command_kb(uint8_t *data, uint8_t length) {
 
     // DO NOT call raw_hid_send(data,length) here, let caller do this
 }
+#endif // VIA_ENABLE

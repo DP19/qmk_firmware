@@ -16,6 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "ansi.h"
+#include "config.h"
 #include "usb_main.h"
 #include "rf_driver.h"
 #include "user_kb.h"
@@ -269,6 +270,15 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             f_deb_show = record->event.pressed;
             return false;
 
+        case DEB_RESET:
+            if (record->event.pressed) {
+                user_config.debounce = DEFAULT_DEBOUNCE;
+                eeconfig_update_kb_datablock(&user_config);
+            } else {
+                unregister_code16(keycode);
+            }
+            return false;
+
         case L_SLP_I:
             if (record->event.pressed) {
                 handle_light_sleep_change(1);
@@ -285,6 +295,15 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             f_l_sleep_show = record->event.pressed;
             return false;
 
+        case L_SLP_RESET:
+            if (record->event.pressed) {
+                user_config.light_sleep_delay = DEFAULT_LIGHT_SLEEP_DELAY;
+                eeconfig_update_kb_datablock(&user_config);
+            } else {
+                unregister_code16(keycode);
+            }
+            return false;
+
         case D_SLP_I:
             if (record->event.pressed) {
                 handle_deep_sleep_change(1);
@@ -299,6 +318,15 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 
         case D_SLP_SHOW:
             f_d_sleep_show = record->event.pressed;
+            return false;
+
+        case D_SLP_RESET:
+            if (record->event.pressed) {
+                user_config.deep_sleep_delay = DEFAULT_DEEP_SLEEP_DELAY;
+                eeconfig_update_kb_datablock(&user_config);
+            } else {
+                unregister_code16(keycode);
+            }
             return false;
 
         case PWR_SHOW:

@@ -1,10 +1,13 @@
-VIA_ENABLE = yes
 UART_DRIVER_REQUIRED = yes
 
 SRC += user_kb.c
 SRC += rf.c
 SRC += side.c
-SRC += via_kb.c
+
+ifdef VIA_ENABLE
+    SRC += via_kb.c
+endif
+
 SRC += mcu_pwr.c sleep.c debounce.c rf_driver.c
 
 OPT ?= 2

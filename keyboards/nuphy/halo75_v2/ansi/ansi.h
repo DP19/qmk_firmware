@@ -33,12 +33,15 @@ enum custom_keycodes {
     DEB_I,
     DEB_D,
     DEB_SHOW,
+    DEB_RESET,
     L_SLP_I,
     L_SLP_D,
     L_SLP_SHOW,
+    L_SLP_RESET,
     D_SLP_I,
     D_SLP_D,
     D_SLP_SHOW,
+    D_SLP_RESET,
     PWR_SHOW,
 };
 
