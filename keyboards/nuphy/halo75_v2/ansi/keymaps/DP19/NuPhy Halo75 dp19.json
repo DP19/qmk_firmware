@@ -169,7 +169,7 @@
               "label": "Effect",
               "type": "dropdown",
               "content": ["id_side_mode_a", 0, 0],
-              "options": ["Wawe", "Mix", "New", "Breath", "Static"]
+              "options": ["Wave", "Mix", "New", "Breath", "Static"]
             },
             {
               "label": "Group",
