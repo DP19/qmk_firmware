@@ -205,6 +205,7 @@ void user_set_side_rgb_color(int index, uint8_t red, uint8_t green, uint8_t blue
     if (side_off) {
         side_off = 0;
     }
+    rgb_led_last_act = 0;
     rgb_matrix_set_color(index, red, green, blue);
 }
 
@@ -465,7 +466,10 @@ static void side_wave_mode_show(void) {
         light_point_playing(0, 1, WAVE_TAB_LEN, &side_play_point);
 
     play_index = side_play_point;
-    if (side_line == 0) set_all_side_off();
+    if (side_line == 0 || user_config.side_light == 0) {
+        set_all_side_off();
+        return;
+    }
     for (int i = 0; i <= side_line - 5; i++) {
         if (user_config.side_rgb) {
             r_temp = flow_rainbow_colour_tab[play_index][0];
@@ -529,7 +533,10 @@ static void side_new_mode_show(void) {
 
     light_point_playing(0, 1, (side_line - 5), &side_play_point);
     play_index = side_play_point;
-    if (side_line == 0) set_all_side_off();
+    if (side_line == 0 || user_config.side_light == 0) {
+        set_all_side_off();
+        return;
+    }
     for (int i = 0; i <= (side_line - 5); i++) {
         if (play_index < (side_line - 5) / 2) {
             r_temp = dual_colour_lib[user_config.side_colour][0];
@@ -576,7 +583,10 @@ static void side_spectrum_mode_show(void) {
         side_play_cnt -= side_speed_table[user_config.side_mode_a][user_config.side_speed];
     if (side_play_cnt > 20) side_play_cnt = 0;
 
-    if (side_line == 0) set_all_side_off();
+    if (side_line == 0 || user_config.side_light == 0) {
+        set_all_side_off();
+        return;
+    }
 
     light_point_playing(1, 1, FLOW_COLOUR_TAB_LEN, &side_play_point);
 
@@ -618,7 +628,10 @@ static void side_breathe_mode_show(void) {
         side_play_cnt -= side_speed_table[user_config.side_mode_a][user_config.side_speed];
     if (side_play_cnt > 20) side_play_cnt = 0;
 
-    if (side_line == 0) set_all_side_off();
+    if (side_line == 0 || user_config.side_light == 0) {
+        set_all_side_off();
+        return;
+    }
 
     light_point_playing(0, 1, BREATHE_TAB_LEN, &play_point);
 
@@ -670,7 +683,10 @@ static void side_static_mode_show(void) {
         side_play_cnt -= side_speed_table[user_config.side_mode_a][user_config.side_speed];
     if (side_play_cnt > 20) side_play_cnt = 0;
 
-    if (side_line == 0) set_all_side_off();
+    if (side_line == 0 || user_config.side_light == 0) {
+        set_all_side_off();
+        return;
+    }
 
     if (side_play_point >= SIDE_COLOUR_MAX) side_play_point = 0;
 

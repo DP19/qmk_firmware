@@ -11,8 +11,8 @@ The F row represents the 10s percentage and number row the ones. Example, 35% wi
 - Side indicators will flash red for 0.3s when board enters deep sleep.
 - Bluetooth connection indicators will be lit blue when establishing connection and while showing connected. This lights the corresponding
 BT mode key. Green indicator for RF connection
-- RGB will be disabled when brightness is 0 for keyboard lights and halo. These are on the same driver so you have to have them both off for this to happen
-- Adjustable per key debounce. This value is used in both press and release events
+- RGB will be powered off when brightness is 0 for keyboard lights (or disabled) and when the halo light is in All Off mode or brightness is 0. These are on the same driver so you have to have them both off for this to happen. Cutting power to the rgb matrix saves a lot of battery over just not displaying leds.
+- Adjustable global keyboard debounce. This value is used for all state changes
 - Full support for via for all custimizations
 
 ### Sleep Mode / Debounce

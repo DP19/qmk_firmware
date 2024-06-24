@@ -137,8 +137,9 @@
               "type": "dropdown",
               "content": ["id_qmk_rgb_matrix_effect", 3, 2],
               "options": [
+                ["All Off", 0],
                 ["Solid Color", 1],
-                ["Reactive Simple", 29]
+                ["Reactive Simple", 2]
               ]
             },
             {

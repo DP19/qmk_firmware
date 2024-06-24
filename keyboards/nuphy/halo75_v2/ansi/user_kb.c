@@ -437,8 +437,7 @@ void user_set_rgb_color(int index, uint8_t red, uint8_t green, uint8_t blue) {
 
 /**
  * @brief Handle LED power
- * @note Turn off LEDs if not used to save some power. This is ported
- *       from older Nuphy leaks.
+ * @note Turn off LEDs if not used to save some power.
  */
 void led_power_handle(void) {
     // sleep handler is setting values we shouldn't check
@@ -451,10 +450,12 @@ void led_power_handle(void) {
 
     interval = timer_read32();
 
-    if (rgb_led_last_act > 100) { // 10ms intervals
+    if (rgb_led_last_act > 100) {
         if (rgb_matrix_is_enabled() && rgb_matrix_get_val() != 0) {
             pwr_rgb_led_on();
-        } else { // brightness is 0 or RGB off.
+        } else if (user_config.side_mode_b != 0 && user_config.side_light != 0) {
+            pwr_rgb_led_on();
+        } else { // brightness is 0 or RGB off and halo light off or brightness is 0
             pwr_rgb_led_off();
         }
     }
