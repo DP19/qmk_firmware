@@ -94,7 +94,7 @@ typedef enum {
 #define RF_DFU_PRESS_DELAY      30
 #define RGB_TEST_PRESS_DELAY    30
 
-#define DEBOUNCE_MAX 10
+#define DEBOUNCE_MAX 25
 #define SLEEP_MAX 20
 
 typedef struct

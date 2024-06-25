@@ -92,7 +92,6 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
                 if (dev_info.link_mode != LINK_USB) {
                     rf_sw_temp    = LINK_RF_24;
                     f_rf_sw_press = 1;
-                    break_all_key();
                 }
             } else if (f_rf_sw_press) {
                 f_rf_sw_press = 0;
@@ -110,7 +109,6 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
                 if (dev_info.link_mode != LINK_USB) {
                     rf_sw_temp    = LINK_BT_1;
                     f_rf_sw_press = 1;
-                    break_all_key();
                 }
             } else if (f_rf_sw_press) {
                 f_rf_sw_press = 0;
@@ -128,7 +126,6 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
                 if (dev_info.link_mode != LINK_USB) {
                     rf_sw_temp    = LINK_BT_2;
                     f_rf_sw_press = 1;
-                    break_all_key();
                 }
             } else if (f_rf_sw_press) {
                 f_rf_sw_press = 0;
@@ -146,7 +143,6 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
                 if (dev_info.link_mode != LINK_USB) {
                     rf_sw_temp    = LINK_BT_3;
                     f_rf_sw_press = 1;
-                    break_all_key();
                 }
             } else if (f_rf_sw_press) {
                 f_rf_sw_press = 0;
