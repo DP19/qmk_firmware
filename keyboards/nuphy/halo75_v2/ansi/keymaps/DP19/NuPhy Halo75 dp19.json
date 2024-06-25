@@ -236,7 +236,6 @@
               "label": "Debounce",
               "type": "dropdown",
               "options": [
-                "0ms",
                 "1ms",
                 "2ms",
                 "3ms",
@@ -246,7 +245,12 @@
                 "7ms",
                 "8ms",
                 "9ms",
-                "10ms"
+                "10ms",
+                "11ms",
+                "12ms",
+                "13ms",
+                "14ms",
+                "15ms"
               ],
               "content": ["id_debounce", 0, 10]
             }

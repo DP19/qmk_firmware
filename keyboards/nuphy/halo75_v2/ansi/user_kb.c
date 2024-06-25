@@ -504,7 +504,7 @@ void handle_debounce_change(uint8_t dir) {
         if (user_config.debounce == DEBOUNCE_MAX) return;
         user_config.debounce++;
     } else {
-        if (user_config.debounce == 0) return;
+        if (user_config.debounce == 1) return; // Debounce set to 0 is invalid
         user_config.debounce--;
     }
     eeconfig_update_kb_datablock(&user_config);

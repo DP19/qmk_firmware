@@ -43,7 +43,7 @@ void via_config_set_value(uint8_t *data) {
             user_config.side_colour = *value_data;
             break;
         case id_debounce:
-            user_config.debounce = *value_data;
+            user_config.debounce = *value_data + 1; // Options are indexed at 0
             break;
         case id_light_sleep_delay:
             user_config.light_sleep_delay = *value_data + 1; // Options are indexed at 0
@@ -81,7 +81,7 @@ void via_config_get_value(uint8_t *data) {
             *value_data = user_config.side_colour;
             break;
         case id_debounce:
-            *value_data = user_config.debounce;
+            *value_data = user_config.debounce - 1;
             break;
         case id_light_sleep_delay:
             *value_data = user_config.light_sleep_delay - 1;
