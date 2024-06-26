@@ -56,9 +56,6 @@ extern uint16_t        no_act_time;
 extern bool            f_send_channel;
 extern bool            f_dial_sw_init_ok;
 
-uint8_t f_bit_send  = 0;
-uint8_t f_byte_send = 0;
-
 report_mouse_t mousekey_get_report(void);
 void           uart_init(uint32_t baud); // qmk uart.c
 void           uart_send_report(uint8_t report_type, uint8_t *report_buf, uint8_t report_size);
@@ -67,23 +64,6 @@ uint8_t        get_checksum(uint8_t *buf, uint8_t len);
 void           uart_receive_pro(void);
 void           break_all_key(void);
 uint16_t       host_last_consumer_usage(void);
-
-/**
- * @brief Get variable uart key send repeat interval.
- */
-static uint8_t get_repeat_interval(void) {
-    uint8_t interval = f_byte_send > f_bit_send ? f_byte_send : f_bit_send;
-    if (interval == 0) {
-        return 50;
-    } else if (interval <= 3) {
-        return 3;
-    } else if (interval <= 6) {
-        return 5;
-    } else if (interval <= 9) {
-        return 7;
-    }
-    return 25;
-}
 
 #ifdef NKRO_ENABLE
 /**
@@ -95,8 +75,8 @@ static void uart_auto_nkey_send(uint8_t *pre_bit_report, uint8_t *now_bit_report
     uint8_t change_mask, offset_mask;
     uint8_t key_code = 0;
 
-    f_byte_send = 0;
-    f_bit_send  = 0;
+    uint8_t f_byte_send = 0;
+    uint8_t f_bit_send  = 0;
 
     if (pre_bit_report[0] ^ now_bit_report[0]) {
         bytekb_report_buf[0] = now_bit_report[0];
@@ -150,34 +130,6 @@ static void uart_auto_nkey_send(uint8_t *pre_bit_report, uint8_t *now_bit_report
 #endif // NKRO_ENABLE
 
 /**
- * @brief  Uart send keys report.
- */
-void uart_send_report_repeat(void) {
-    if (dev_info.link_mode == LINK_USB) return;
-    keyboard_protocol = 1;
-
-    uint8_t interval = get_repeat_interval();
-    if (timer_elapsed32(uart_rpt_timer) >= interval) {
-        uart_rpt_timer = timer_read32();
-        if (no_act_time <= 25) {
-            if (f_byte_send) {
-                uart_send_report(CMD_RPT_BYTE_KB, bytekb_report_buf, 8);
-                f_byte_send++;
-                if (f_bit_send) wait_us(200);
-            }
-
-            if (f_bit_send) {
-                uart_send_report(CMD_RPT_BIT_KB, uart_bit_report_buf, 16);
-                f_bit_send++;
-            }
-        } else {
-            f_byte_send = 0;
-            f_bit_send  = 0;
-        }
-    }
-}
-
-/**
  * @brief  Uart send consumer keys report.
  * @note Call in rf_driver.c
  */
@@ -213,7 +165,6 @@ void uart_send_system_report(report_extra_t *report) {
 void uart_send_report_keyboard(report_keyboard_t *report) {
     no_act_time      = 0;
     report->reserved = 0;
-    f_byte_send      = 1;
     uart_send_report(CMD_RPT_BYTE_KB, &report->mods, 8);
     memcpy(bytekb_report_buf, &report->mods, 8);
 }
