@@ -213,7 +213,7 @@ void uart_send_system_report(report_extra_t *report) {
 void uart_send_report_keyboard(report_keyboard_t *report) {
     no_act_time      = 0;
     report->reserved = 0;
-    f_bit_send       = 1;
+    f_byte_send      = 1;
     uart_send_report(CMD_RPT_BYTE_KB, &report->mods, 8);
     memcpy(bytekb_report_buf, &report->mods, 8);
 }
