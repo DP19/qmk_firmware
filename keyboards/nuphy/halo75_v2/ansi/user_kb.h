@@ -88,6 +88,7 @@ typedef enum {
 #define POWER_DOWN_DELAY  (24)
 
 #define SIDE_INDEX 83
+#define LOGO_INDEX SIDE_INDEX + 35
 
 #define RF_LONG_PRESS_DELAY     30
 #define DEV_RESET_PRESS_DELAY   30

@@ -219,9 +219,7 @@ void set_left_rgb(uint8_t r, uint8_t g, uint8_t b) {
 }
 
 void set_logo_rgb(uint8_t r, uint8_t g, uint8_t b) {
-    for (int i = 35; i < 37; i++) {
-        rgb_matrix_set_color(SIDE_INDEX + i, r, g, b);
-    }
+    rgb_matrix_set_color(LOGO_INDEX, r, g, b);
 }
 
 void set_all_side_off(void) {

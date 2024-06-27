@@ -46,6 +46,7 @@ extern bool f_d_sleep_show;
  */
 bool pre_process_record_kb(uint16_t keycode, keyrecord_t *record) {
     no_act_time = 0;
+    rf_linking_time = 0;
     // wakeup check for light sleep/no sleep - fire this immediately to not lose wake keys.
     if (f_wakeup_prepare) {
         f_wakeup_prepare = 0;
@@ -64,7 +65,6 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
         return false;
     }
     no_act_time     = 0;
-    rf_linking_time = 0;
     uart_rpt_timer  = timer_read32();
 
     switch (keycode) {

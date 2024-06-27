@@ -75,12 +75,12 @@ static uint8_t get_repeat_interval(void) {
     uint8_t interval = f_byte_send > f_bit_send ? f_byte_send : f_bit_send;
     if (interval == 0) {
         return 50;
-    } else if (interval <= 3) {
-        return 3;
-    } else if (interval <= 6) {
-        return 5;
-    } else if (interval <= 9) {
-        return 7;
+    } else if (interval <= 4) {
+        return 8;
+    } else if (interval <= 7) {
+        return 12;
+    } else if (interval <= 10) {
+        return 14;
     }
     return 25;
 }

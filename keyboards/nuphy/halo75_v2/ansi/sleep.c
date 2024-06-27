@@ -57,6 +57,7 @@ void deep_sleep_handle(void) {
     */
     f_wakeup_prepare = 0; // if you press a key that wakes mcu but not again this is still set to true
     f_goto_sleep     = 0;
+    rf_linking_time  = 0;
     no_act_time      = 0; // required to not cause an immediate sleep on first wake
 }
 
