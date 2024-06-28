@@ -25,7 +25,6 @@ static const pin_t col_pins[MATRIX_COLS] = MATRIX_COL_PINS;
 
 extern DEV_INFO_STRUCT dev_info;
 
-bool        f_usb_deinit        = 0;
 static bool rgb_led_powered_off = 0;
 static bool rgb_led_on          = 0;
 static bool tim6_enabled        = false;
@@ -98,11 +97,6 @@ void enter_deep_sleep(void) {
         uart_send_cmd(CMD_SLEEP, 5, 5); // Directly enter deep sleep when not connected
 
     //------------------------ Turn off USB in non-USB mode
-    // TODO - do we really need to deinitialize USB?
-    if (dev_info.link_mode != LINK_USB) {
-        f_usb_deinit = 1;
-        m_deinit_usb_072(); // Turn off USB
-    }
 
     // off timer
     if (tim6_enabled) TIM_Cmd(TIM6, DISABLE);
