@@ -89,9 +89,11 @@ void sleep_handle(void) {
 
         if (deep_sleep) {
             f_force_deep = 0;
+            break_all_key();
             deep_sleep_handle();
             return;
         } else {
+            break_all_key();
             enter_light_sleep();
             f_wakeup_prepare = 1;
         }

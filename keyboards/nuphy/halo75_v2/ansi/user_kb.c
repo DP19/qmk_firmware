@@ -21,7 +21,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "config.h"
 #include "usb_main.h"
 #include "mcu_pwr.h"
-#include "rf_driver.h"
 
 user_config_t   user_config;
 DEV_INFO_STRUCT dev_info = {
@@ -64,7 +63,8 @@ extern report_keyboard_t *keyboard_report;
 extern report_nkro_t *nkro_report;
 extern uint8_t        bitkb_report_buf[32];
 #endif // NKRO_ENABLE
-extern uint8_t bytekb_report_buf[8];
+extern uint8_t       bytekb_report_buf[8];
+extern host_driver_t rf_host_driver;
 
 extern bool f_goto_sleep;
 
@@ -196,8 +196,7 @@ void long_press_key(void) {
  * @brief  Release all keys, clear keyboard report.
  */
 void break_all_key(void) {
-    uint8_t report_buf[NKRO_REPORT_BITS + 1];
-    bool    nkro_temp = keymap_config.nkro;
+    bool nkro_temp = keymap_config.nkro;
 
     clear_weak_mods();
     clear_mods();
@@ -217,20 +216,8 @@ void break_all_key(void) {
 
     keymap_config.nkro = nkro_temp;
 
-    if (dev_info.link_mode != LINK_USB) {
-#ifdef NKRO_ENABLE
-        memset(report_buf, 0, 16);
-        uart_send_report(CMD_RPT_BIT_KB, report_buf, 16);
-        wait_ms(10);
-#endif // NKRO_ENABLE
-        uart_send_report(CMD_RPT_BYTE_KB, report_buf, 8);
-        wait_ms(10);
-    }
-
-#ifdef NKRO_ENABLE
-    memset(bitkb_report_buf, 0, sizeof(bitkb_report_buf));
-#endif // NKRO_ENABLE
-    memset(bytekb_report_buf, 0, sizeof(bytekb_report_buf));
+    void clear_report_buffer(void);
+    clear_report_buffer();
 }
 
 /**

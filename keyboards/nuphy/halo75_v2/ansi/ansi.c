@@ -18,7 +18,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "ansi.h"
 #include "config.h"
 #include "usb_main.h"
-#include "rf_driver.h"
 #include "user_kb.h"
 
 extern bool            f_rf_sw_press;
@@ -33,7 +32,6 @@ extern uint16_t        rf_sw_press_delay;
 extern uint16_t        rf_linking_time;
 extern user_config_t   user_config;
 extern DEV_INFO_STRUCT dev_info;
-extern uint32_t        uart_rpt_timer;
 extern uint16_t        rf_link_show_time;
 
 extern bool f_bat_num_show;
@@ -45,7 +43,7 @@ extern bool f_d_sleep_show;
  * @brief  qmk pre process record - used to catch light sleep wake up faster
  */
 bool pre_process_record_kb(uint16_t keycode, keyrecord_t *record) {
-    no_act_time = 0;
+    no_act_time     = 0;
     rf_linking_time = 0;
     // wakeup check for light sleep/no sleep - fire this immediately to not lose wake keys.
     if (f_wakeup_prepare) {
@@ -64,8 +62,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
     if (!process_record_user(keycode, record)) {
         return false;
     }
-    no_act_time     = 0;
-    uart_rpt_timer  = timer_read32();
+    no_act_time = 0;
 
     switch (keycode) {
         case RF_DFU:
@@ -92,6 +89,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
                 if (dev_info.link_mode != LINK_USB) {
                     rf_sw_temp    = LINK_RF_24;
                     f_rf_sw_press = 1;
+                    break_all_key();
                 }
             } else if (f_rf_sw_press) {
                 f_rf_sw_press = 0;
@@ -109,6 +107,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
                 if (dev_info.link_mode != LINK_USB) {
                     rf_sw_temp    = LINK_BT_1;
                     f_rf_sw_press = 1;
+                    break_all_key();
                 }
             } else if (f_rf_sw_press) {
                 f_rf_sw_press = 0;
@@ -126,6 +125,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
                 if (dev_info.link_mode != LINK_USB) {
                     rf_sw_temp    = LINK_BT_2;
                     f_rf_sw_press = 1;
+                    break_all_key();
                 }
             } else if (f_rf_sw_press) {
                 f_rf_sw_press = 0;
@@ -143,6 +143,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
                 if (dev_info.link_mode != LINK_USB) {
                     rf_sw_temp    = LINK_BT_3;
                     f_rf_sw_press = 1;
+                    break_all_key();
                 }
             } else if (f_rf_sw_press) {
                 f_rf_sw_press = 0;
