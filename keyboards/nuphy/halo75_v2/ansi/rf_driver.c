@@ -58,6 +58,78 @@ static report_buffer_t make_report_buffer(uint8_t cmd, uint8_t *buff, uint8_t le
     return report;
 }
 
+#ifdef NKRO_ENABLE
+/**
+ * @brief Uart auto nkey send
+ */
+static void uart_auto_nkey_send(uint8_t *now_bit_report, uint8_t size) {
+    static uint8_t bytekb_report_buf[8] = {0};
+    static uint8_t bitkb_report_buf[16] = {0};
+    static uint8_t pre_bit_report[16]   = {0};
+
+    uint8_t i, j, byte_index;
+    uint8_t change_mask, offset_mask;
+    uint8_t key_code = 0;
+
+    bool f_byte_send = 0;
+    bool f_bit_send  = 0;
+
+    if (pre_bit_report[0] ^ now_bit_report[0]) {
+        bytekb_report_buf[0] = now_bit_report[0];
+        f_byte_send          = 1;
+    }
+
+    for (i = 1; i < size; i++) {
+        change_mask = pre_bit_report[i] ^ now_bit_report[i];
+        offset_mask = 1;
+        for (j = 0; j < 8; j++) {
+            if (change_mask & offset_mask) {
+                if (now_bit_report[i] & offset_mask) {
+                    for (byte_index = 2; byte_index < 8; byte_index++) {
+                        if (bytekb_report_buf[byte_index] == 0) {
+                            bytekb_report_buf[byte_index] = key_code;
+                            f_byte_send                   = 1;
+                            break;
+                        }
+                    }
+                    if (byte_index >= 8) {
+                        bitkb_report_buf[i] |= offset_mask;
+                        f_bit_send = 1;
+                    }
+                } else {
+                    for (byte_index = 2; byte_index < 8; byte_index++) {
+                        if (bytekb_report_buf[byte_index] == key_code) {
+                            bytekb_report_buf[byte_index] = 0;
+                            f_byte_send                   = 1;
+                            break;
+                        }
+                    }
+                    if (byte_index >= 8) {
+                        bitkb_report_buf[i] &= ~offset_mask;
+                        f_bit_send = 1;
+                    }
+                }
+            }
+            key_code++;
+            offset_mask <<= 1;
+        }
+    }
+    memcpy(pre_bit_report, now_bit_report, 16);
+
+    if (f_byte_send) {
+        report_buffer_t rpt_byte = make_report_buffer(CMD_RPT_BYTE_KB, &bytekb_report_buf[0], 8);
+        send_or_queue(&rpt_byte);
+        report_buff_a = rpt_byte;
+    }
+
+    if (f_bit_send) {
+        report_buffer_t rpt_bit = make_report_buffer(CMD_RPT_BIT_KB, &bitkb_report_buf[0], 16);
+        send_or_queue(&rpt_bit);
+        report_buff_b = rpt_bit;
+    }
+}
+#endif // NKRO_ENABLE
+
 static uint8_t rf_keyboard_leds(void) {
     return dev_info.rf_led;
 }

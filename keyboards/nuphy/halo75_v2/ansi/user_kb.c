@@ -399,7 +399,7 @@ void timer_pro(void) {
     }
 
     // step 10ms
-    if (timer_elapsed32(interval_timer) < 10) return;
+    if (timer_elapsed32(interval_timer) < TIMER_STEP) return;
     interval_timer = timer_read32();
 
     if (rf_link_show_time < RF_LINK_SHOW_TIME) rf_link_show_time++;
