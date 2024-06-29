@@ -49,7 +49,7 @@ uint8_t        rf_sw_temp   = 0;
 uint8_t        host_mode;
 uint16_t       rf_linking_time       = 0;
 uint16_t       rf_link_show_time     = 0;
-uint16_t       no_act_time           = 0;
+uint32_t       no_act_time           = 0;
 uint16_t       dev_reset_press_delay = 0;
 uint16_t       rf_dfu_press_delay    = 0;
 uint16_t       rf_sw_press_delay     = 0;
@@ -399,12 +399,12 @@ void timer_pro(void) {
     }
 
     // step 10ms
-    if (timer_elapsed32(interval_timer) < TIMER_STEP) return;
+    if (timer_elapsed32(interval_timer) < 10) return;
     interval_timer = timer_read32();
 
     if (rf_link_show_time < RF_LINK_SHOW_TIME) rf_link_show_time++;
 
-    if (no_act_time < 0xffff) no_act_time++;
+    if (no_act_time < 0xffffffff) no_act_time++;
 
     if (rf_linking_time < 0xffff) rf_linking_time++;
 

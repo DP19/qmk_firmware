@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 extern user_config_t   user_config;
 extern DEV_INFO_STRUCT dev_info;
 extern uint16_t        rf_linking_time;
-extern uint16_t        no_act_time;
+extern uint32_t        no_act_time;
 extern bool            f_goto_sleep;
 extern bool            f_force_deep;
 extern bool            f_wakeup_prepare;
@@ -80,20 +80,18 @@ void sleep_handle(void) {
             deep_sleep = true;
             if (f_force_deep) {
                 // Deep is already set just skip the reset of the else checks
-            } else if (no_act_time < (user_config.deep_sleep_delay * 1000 * 60 / TIMER_STEP)) {
+            } else if (no_act_time < user_config.deep_sleep_delay * 100 * 60) {
                 deep_sleep = false;
             } else if (dev_info.link_mode == LINK_USB && USB_DRIVER.state == USB_SUSPENDED) {
-                deep_sleep = 0;
+                deep_sleep = false;
             }
         }
 
         if (deep_sleep) {
             f_force_deep = 0;
-            break_all_key();
             deep_sleep_handle();
             return;
         } else {
-            break_all_key();
             enter_light_sleep();
             f_wakeup_prepare = 1;
         }
@@ -115,7 +113,7 @@ void sleep_handle(void) {
         }
     } else if (dev_info.rf_state == RF_CONNECT) {
         rf_disconnect_time = 0;
-        if (no_act_time >= (user_config.light_sleep_delay * 1000 * 60 / TIMER_STEP )) {
+        if (no_act_time >= user_config.light_sleep_delay * 100 * 60) {
             f_goto_sleep = 1;
         }
     } else if (rf_linking_time >= LINK_TIMEOUT) {

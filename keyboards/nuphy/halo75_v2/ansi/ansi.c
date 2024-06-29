@@ -26,7 +26,7 @@ extern bool            f_power_togg_show;
 extern bool            f_dev_reset_press;
 extern bool            f_rf_dfu_press;
 extern bool            f_bat_hold;
-extern uint16_t        no_act_time;
+extern uint32_t        no_act_time;
 extern uint8_t         rf_sw_temp;
 extern uint16_t        rf_sw_press_delay;
 extern uint16_t        rf_linking_time;

@@ -98,8 +98,6 @@ typedef enum {
 #define DEBOUNCE_MAX 25
 #define SLEEP_MAX 20
 
-#define TIMER_STEP 10
-
 typedef struct
 {
     uint8_t  RXDState;
