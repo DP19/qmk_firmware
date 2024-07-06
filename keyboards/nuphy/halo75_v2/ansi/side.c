@@ -871,7 +871,7 @@ void bat_num_led(uint8_t bat_percent) {
         user_set_rgb_color(i, r, g, b);
     }
 
-    for (uint8_t i = 0; i < bat_pct_ones; i++) {
+    for (uint8_t i = 1; i <= bat_pct_ones; i++) {
         user_set_rgb_color(16 + i, r, g, b);
     }
 }
