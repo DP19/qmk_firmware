@@ -334,13 +334,13 @@ void dial_sw_fast_scan(void) {
     for (debounce = 0; debounce < 10; debounce++) {
         dial_scan_dev = 0;
         dial_scan_sys = 0;
-        if (readPin(DEV_MODE_PIN)) {
+        if (gpio_read_pin(DEV_MODE_PIN)) {
             dial_scan_dev = 0x01;
         } else {
             dial_scan_dev = 0;
         }
 
-        if (readPin(SYS_MODE_PIN)) {
+        if (gpio_read_pin(SYS_MODE_PIN)) {
             dial_scan_sys = 0x01;
         } else {
             dial_scan_sys = 0;

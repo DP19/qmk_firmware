@@ -1015,9 +1015,9 @@ void bat_led_show(void) {
  * @brief  device_reset_show.
  */
 void device_reset_show(void) {
-    writePinHigh(DC_BOOST_PIN);
-    writePinHigh(RGB_DRIVER_SDB1);
-    writePinHigh(RGB_DRIVER_SDB2);
+    gpio_write_pin_high(DC_BOOST_PIN);
+    gpio_write_pin_high(RGB_DRIVER_SDB1);
+    gpio_write_pin_high(RGB_DRIVER_SDB2);
     for (int blink_cnt = 0; blink_cnt < 3; blink_cnt++) {
         rgb_matrix_set_color_all(0xFF, 0xFF, 0xFF);
         rgb_matrix_update_pwm_buffers();
@@ -1045,9 +1045,9 @@ void device_reset_init(void) {
  * @brief  rgb test
  */
 void rgb_test_show(void) {
-    writePinHigh(DC_BOOST_PIN);
-    writePinHigh(RGB_DRIVER_SDB1);
-    writePinHigh(RGB_DRIVER_SDB2);
+    gpio_write_pin_high(DC_BOOST_PIN);
+    gpio_write_pin_high(RGB_DRIVER_SDB1);
+    gpio_write_pin_high(RGB_DRIVER_SDB2);
     rgb_matrix_set_color_all(0xFF, 0x00, 0x00);
     rgb_matrix_update_pwm_buffers();
     wait_ms(1000);
