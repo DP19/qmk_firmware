@@ -752,9 +752,9 @@ void bat_charging_design(uint8_t init, uint8_t r, uint8_t g, uint8_t b) {
 
     for (i = 0; i < init; i++) {
         if (show_mask & bit_mask) {
-            user_set_side_rgb_color(i, r, g, b);
+            user_set_side_rgb_color(SIDE_INDEX + i, r, g, b);
         } else {
-            user_set_side_rgb_color(i, 0x00, 0x00, 0x00);
+            user_set_side_rgb_color(SIDE_INDEX + i, 0x00, 0x00, 0x00);
         }
         bit_mask <<= 1;
     }
