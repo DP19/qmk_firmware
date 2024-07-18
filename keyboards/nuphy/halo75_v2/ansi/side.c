@@ -750,7 +750,7 @@ void bat_charging_design(uint8_t init, uint8_t r, uint8_t g, uint8_t b) {
         }
     }
 
-    for (i = 0; i < side_line; i++) {
+    for (i = 0; i < init; i++) {
         if (show_mask & bit_mask) {
             user_set_side_rgb_color(i, r, g, b);
         } else {
