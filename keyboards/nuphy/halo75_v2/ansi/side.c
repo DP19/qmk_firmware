@@ -204,6 +204,7 @@ void side_mode_b_control(void) {
 void user_set_side_rgb_color(int index, uint8_t red, uint8_t green, uint8_t blue) {
     if (side_off) {
         side_off = 0;
+        pwr_rgb_led_on();
     }
     rgb_led_last_act = 0;
     rgb_matrix_set_color(index, red, green, blue);
