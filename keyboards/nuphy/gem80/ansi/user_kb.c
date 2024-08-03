@@ -16,56 +16,57 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "user_kb.h"
-#include <stdbool.h>
-#include <stdint.h>
 #include "ansi.h"
 #include "config.h"
-#include "eeconfig.h"
 #include "color.h"
-#include "host.h"
+#include "usb_main.h"
+#include "mcu_pwr.h"
 
+user_config_t   user_config;
 DEV_INFO_STRUCT dev_info = {
     .rf_battery = 100,
     .link_mode  = LINK_USB,
     .rf_state   = RF_IDLE,
 };
-bool f_bat_hold              = 0;
-bool f_sys_show              = 0;
-bool f_sleep_show            = 0;
-bool f_usb_sleep_show        = 0;
-bool f_deep_sleep_show       = 0;
-bool f_send_channel          = 0;
-bool f_dial_sw_init_ok       = 0;
-bool f_rf_sw_press           = 0;
-bool f_dev_reset_press       = 0;
-bool f_rgb_test_press        = 0;
-bool f_debounce_press_show   = 0;
-bool f_debounce_release_show = 0;
-bool f_sleep_timeout_show    = 0;
+bool f_bat_hold        = 0;
+bool f_sys_show        = 0;
+bool f_sleep_show      = 0;
+bool f_send_channel    = 0;
+bool f_dial_sw_init_ok = 0;
+bool f_rf_sw_press     = 0;
+bool f_dev_reset_press = 0;
+bool f_rf_dfu_press    = 0;
+bool f_rgb_test_press  = 0;
+
+bool f_bat_num_show = 0;
+bool f_deb_show     = 0;
+bool f_l_sleep_show = 0;
+bool f_d_sleep_show = 0;
 
 uint8_t        rf_blink_cnt          = 0;
 uint8_t        rf_sw_temp            = 0;
-uint8_t        host_mode             = 0;
+uint8_t        host_mode;
 uint16_t       rf_linking_time       = 0;
 uint16_t       rf_link_show_time     = 0;
 uint32_t       no_act_time           = 0;
 uint16_t       dev_reset_press_delay = 0;
+uint16_t       rf_dfu_press_delay    = 0;
 uint16_t       rf_sw_press_delay     = 0;
 uint16_t       rgb_test_press_delay  = 0;
 uint16_t       rgb_led_last_act      = 0;
 uint16_t       side_led_last_act     = 0;
 host_driver_t *m_host_driver         = 0;
-RGB            bat_pct_rgb           = {.r = 0x80, .g = 0x80, .b = 0x00};
 
 extern bool               f_rf_new_adv_ok;
 extern report_keyboard_t *keyboard_report;
-extern report_nkro_t     *nkro_report;
-extern host_driver_t      rf_host_driver;
-extern uint8_t            logo_mode;
-extern uint8_t            logo_light;
-extern uint8_t            logo_speed;
-extern uint8_t            logo_rgb;
-extern uint8_t            logo_colour;
+#ifdef NKRO_ENABLE
+extern report_nkro_t *nkro_report;
+extern uint8_t        bitkb_report_buf[32];
+#endif // NKRO_ENABLE
+extern uint8_t       bytekb_report_buf[8];
+extern host_driver_t rf_host_driver;
+
+extern bool f_goto_sleep;
 
 /**
  * @brief  gpio initial.
@@ -76,37 +77,25 @@ void gpio_init(void) {
     pwr_side_led_on();
 
     /* set side led pin output low */
-    setPinOutput(DRIVER_SIDE_PIN);
-    writePinLow(DRIVER_SIDE_PIN);
+    gpio_set_pin_output(DRIVER_SIDE_PIN);
+    gpio_write_pin_low(DRIVER_SIDE_PIN);
 
-#if (MODE == WIRELESS)
     /* config RF module pin */
-    setPinOutput(NRF_WAKEUP_PIN);
-    writePinHigh(NRF_WAKEUP_PIN);
+    gpio_set_pin_output(NRF_WAKEUP_PIN);
+    gpio_write_pin_high(NRF_WAKEUP_PIN);
 
-    setPinInputHigh(NRF_TEST_PIN);
+    gpio_set_pin_input_high(NRF_TEST_PIN);
 
     /* reset RF module */
-    setPinOutput(NRF_RESET_PIN);
-    writePinLow(NRF_RESET_PIN);
+    gpio_set_pin_output(NRF_RESET_PIN);
+    gpio_write_pin_low(NRF_RESET_PIN);
     wait_ms(50);
-    writePinHigh(NRF_RESET_PIN);
+    gpio_write_pin_high(NRF_RESET_PIN);
 
     /* connection mode switch pin */
-    setPinInputHigh(DEV_MODE_PIN);
-#endif
+    gpio_set_pin_input_high(DEV_MODE_PIN);
     /* config keyboard OS switch pin */
-    setPinInputHigh(SYS_MODE_PIN);
-
-    // open power
-    setPinOutput(DC_BOOST_PIN);
-    writePinHigh(DC_BOOST_PIN);
-
-    setPinOutput(DRIVER_LED_CS_PIN);
-    writePinLow(DRIVER_LED_CS_PIN);
-
-    setPinOutput(DRIVER_SIDE_CS_PIN);
-    writePinLow(DRIVER_SIDE_CS_PIN);
+    gpio_set_pin_input_high(SYS_MODE_PIN);
 }
 
 /**
@@ -118,13 +107,10 @@ void long_press_key(void) {
     if (timer_elapsed32(long_press_timer) < 100) return;
     long_press_timer = timer_read32();
 
-    // Open a new RF device
     if (f_rf_sw_press) {
-#if (MODE == WIRELESS)
         rf_sw_press_delay++;
         if (rf_sw_press_delay >= RF_LONG_PRESS_DELAY) {
-            f_rf_sw_press = 0;
-
+            f_rf_sw_press        = 0;
             dev_info.link_mode   = rf_sw_temp;
             dev_info.rf_channel  = rf_sw_temp;
             dev_info.ble_channel = rf_sw_temp;
@@ -137,12 +123,10 @@ void long_press_key(void) {
                 if (f_rf_new_adv_ok) break;
             }
         }
-#endif
     } else {
         rf_sw_press_delay = 0;
     }
 
-    // The device is restored to factory Settings
     if (f_dev_reset_press) {
         dev_reset_press_delay++;
         if (dev_reset_press_delay >= DEV_RESET_PRESS_DELAY) {
@@ -171,18 +155,31 @@ void long_press_key(void) {
             device_reset_init();
 
             if (dev_info.sys_sw_state == SYS_SW_MAC) {
-                default_layer_set(1 << 0);
+                default_layer_set(1 << 0); // MAC
+#ifdef NKRO_ENABLE
                 keymap_config.nkro = 0;
+#endif // NKRO_ENABLE
             } else {
-                default_layer_set(1 << 2);
+                default_layer_set(1 << 2); // WIN
+#ifdef NKRO_ENABLE
                 keymap_config.nkro = 1;
+#endif // NKRO_ENABLE
             }
         }
     } else {
         dev_reset_press_delay = 0;
     }
 
-    // Enter the RGB test mode
+    if (f_rf_dfu_press) {
+        rf_dfu_press_delay++;
+        if (rf_dfu_press_delay >= RF_DFU_PRESS_DELAY) {
+            f_rf_dfu_press = 0;
+            uart_send_cmd(CMD_RF_DFU, 10, 20);
+        }
+    } else {
+        rf_dfu_press_delay = 0;
+    }
+
     if (f_rgb_test_press) {
         rgb_test_press_delay++;
         if (rgb_test_press_delay >= RGB_TEST_PRESS_DELAY) {
@@ -204,13 +201,13 @@ void break_all_key(void) {
     clear_mods();
     clear_keyboard();
 
-    // break nkro key
+#ifdef NKRO_ENABLE
     keymap_config.nkro = 1;
     memset(nkro_report, 0, sizeof(report_nkro_t));
     host_nkro_send(nkro_report);
     wait_ms(10);
+#endif // NRKO_ENABLE
 
-    // break byte key
     keymap_config.nkro = 0;
     memset(keyboard_report, 0, sizeof(report_keyboard_t));
     host_keyboard_send(keyboard_report);
@@ -232,7 +229,6 @@ void switch_dev_link(uint8_t mode) {
     break_all_key();
 
     dev_info.link_mode = mode;
-
     dev_info.rf_state = RF_IDLE;
     f_send_channel    = 1;
 
@@ -261,20 +257,16 @@ void dial_sw_scan(void) {
     }
     dial_scan_timer = timer_read32();
 
-#if (MODE == WIRELESS)
-    setPinInputHigh(DEV_MODE_PIN);
-#endif
-    setPinInputHigh(SYS_MODE_PIN);
-#if (MODE == WIRELESS)
-    if (readPin(DEV_MODE_PIN)) dial_scan |= 0X01;
-#endif
-    if (readPin(SYS_MODE_PIN)) dial_scan |= 0X02;
+    gpio_set_pin_input_high(DEV_MODE_PIN);
+    gpio_set_pin_input_high(SYS_MODE_PIN);
+    if (gpio_read_pin(DEV_MODE_PIN)) dial_scan |= 0X01;
+    if (gpio_read_pin(SYS_MODE_PIN)) dial_scan |= 0X02;
 
     if (dial_save != dial_scan) {
         break_all_key();
-
         no_act_time       = 0;
         rf_linking_time   = 0;
+
         dial_save         = dial_scan;
         debounce          = 25;
         f_dial_sw_init_ok = 0;
@@ -284,7 +276,6 @@ void dial_sw_scan(void) {
         return;
     }
 
-#if (MODE == WIRELESS)
     if (dial_scan & 0x01) {
         if (dev_info.link_mode != LINK_USB) {
             switch_dev_link(LINK_USB);
@@ -294,7 +285,6 @@ void dial_sw_scan(void) {
             switch_dev_link(dev_info.rf_channel);
         }
     }
-#endif
 
     if (dial_scan & 0x02) {
         if (dev_info.sys_sw_state != SYS_SW_MAC) {
@@ -309,7 +299,9 @@ void dial_sw_scan(void) {
             f_sys_show = 1;
             default_layer_set(1 << 2);
             dev_info.sys_sw_state = SYS_SW_WIN;
-            keymap_config.nkro    = 1;
+#ifdef NKRO_ENABLE
+            keymap_config.nkro = 1;
+#endif // NKRO_ENABLE
             break_all_key();
         }
     }
@@ -318,11 +310,9 @@ void dial_sw_scan(void) {
         f_dial_sw_init_ok = 1;
         f_first           = false;
 
-#if (MODE == WIRELESS)
         if (dev_info.link_mode != LINK_USB) {
             host_set_driver(&rf_host_driver);
         }
-#endif
     }
 }
 
@@ -335,25 +325,26 @@ void dial_sw_fast_scan(void) {
     uint8_t dial_check_dev = 0;
     uint8_t dial_check_sys = 0;
     uint8_t debounce       = 0;
-#if (MODE == WIRELESS)
-    setPinInputHigh(DEV_MODE_PIN);
-#endif
-    setPinInputHigh(SYS_MODE_PIN);
+
+    gpio_set_pin_input_high(DEV_MODE_PIN);
+    gpio_set_pin_input_high(SYS_MODE_PIN);
 
     // Debounce to get a stable state
     for (debounce = 0; debounce < 10; debounce++) {
         dial_scan_dev = 0;
         dial_scan_sys = 0;
-#if (MODE == WIRELESS)
-        if (readPin(DEV_MODE_PIN))
+        if (gpio_read_pin(DEV_MODE_PIN)) {
             dial_scan_dev = 0x01;
-        else
+        } else {
             dial_scan_dev = 0;
-#endif
-        if (readPin(SYS_MODE_PIN))
+        }
+
+        if (gpio_read_pin(SYS_MODE_PIN)) {
             dial_scan_sys = 0x01;
-        else
+        } else {
             dial_scan_sys = 0;
+        }
+
         if ((dial_scan_dev != dial_check_dev) || (dial_scan_sys != dial_check_sys)) {
             dial_check_dev = dial_scan_dev;
             dial_check_sys = dial_scan_sys;
@@ -362,7 +353,6 @@ void dial_sw_fast_scan(void) {
         wait_ms(1);
     }
 
-#if (MODE == WIRELESS)
     // RF link mode
     if (dial_scan_dev) {
         if (dev_info.link_mode != LINK_USB) {
@@ -373,22 +363,22 @@ void dial_sw_fast_scan(void) {
             switch_dev_link(dev_info.rf_channel);
         }
     }
-#endif
     // Win or Mac
     if (dial_scan_sys) {
         if (dev_info.sys_sw_state != SYS_SW_MAC) {
+            break_all_key();
             default_layer_set(1 << 0);
             dev_info.sys_sw_state = SYS_SW_MAC;
             keymap_config.nkro    = 0;
-            break_all_key();
         }
     } else {
         if (dev_info.sys_sw_state != SYS_SW_WIN) {
-            // f_sys_show = 1;
+            break_all_key();
             default_layer_set(1 << 2);
             dev_info.sys_sw_state = SYS_SW_WIN;
+#ifdef NKRO_ENABLE
             keymap_config.nkro    = 1;
-            break_all_key();
+#endif // NKRO_ENABLE
         }
     }
 }
@@ -407,97 +397,15 @@ void timer_pro(void) {
     }
 
     // step 10ms
-    if (timer_elapsed32(interval_timer) < TIMER_STEP) return;
+    if (timer_elapsed32(interval_timer) < 10) return;
     interval_timer = timer_read32();
 
     if (rf_link_show_time < RF_LINK_SHOW_TIME) rf_link_show_time++;
 
     if (no_act_time < 0xffffffff) no_act_time++;
-#if (MODE == WIRELESS)
     if (rf_linking_time < 0xffff) rf_linking_time++;
-#endif
     if (rgb_led_last_act < 0xffff) rgb_led_last_act++;
-
     if (side_led_last_act < 0xffff) side_led_last_act++;
-}
-
-/**
- * @brief User config to default setting.
- */
-void kb_config_reset(void) {
-    rgb_matrix_enable();
-    rgb_matrix_mode(RGB_MATRIX_DEFAULT_MODE);
-    rgb_matrix_set_speed(255 - RGB_MATRIX_SPD_STEP * 2);
-    rgb_matrix_sethsv(RGB_DEFAULT_COLOR, 255, RGB_MATRIX_MAXIMUM_BRIGHTNESS - RGB_MATRIX_VAL_STEP * 2);
-
-    init_g_config();
-    // mark config as initiated
-    g_config.been_initiated = 0x45;
-
-    save_config_to_eeprom();
-}
-
-void load_eeprom_data(void) {
-    load_config_from_eeprom();
-
-    if (g_config.been_initiated != 0x45) {
-        kb_config_reset();
-        return;
-    }
-}
-/**
- * @brief toggle usb sleep on/off
- */
-void toggle_usb_sleep(void) {
-    f_usb_sleep_show          = 1;
-    g_config.usb_sleep_toggle = !g_config.usb_sleep_toggle;
-    save_config_to_eeprom();
-}
-
-/**
- * @brief Toggle caps indication between side led / under key / off
- */
-void toggle_caps_indication(void) {
-#if CONSOLE_ENABLE
-    xprintf("CPU_CLOCK %u \n", CPU_CLOCK);
-#endif
-
-    if (g_config.caps_indicator_type == CAPS_INDICATOR_OFF) {
-        g_config.caps_indicator_type = CAPS_INDICATOR_SIDE; // set to initial state, when last state reached
-    } else {
-        g_config.caps_indicator_type += 1;
-    }
-
-    save_config_to_eeprom();
-}
-
-/**
- * @brief Updates RGB value for current bat percentage.
- */
-void update_bat_pct_rgb(void) {
-    uint8_t bat_pct = dev_info.rf_battery;
-
-    if (bat_pct > 100) {
-        bat_pct = 100;
-    }
-    // 120 hue is green, 0 is red on a 360 degree wheel but QMK is a uint8_t
-    // so it needs to convert to relative to 255 - so green is actually 85.
-    uint8_t h = 85;
-    if (bat_pct <= 20) {
-        h = 0; // red
-    } else if (bat_pct <= 40) {
-        h = 21; // orange
-    } else if (bat_pct <= 80) {
-        h = 43; // yellow
-    }
-
-    HSV hsv = {
-        .h = h,
-        .s = 255,
-        .v = 128, // 50% max brightness
-    };
-
-    bat_pct_rgb = hsv_to_rgb_nocie(hsv); // this results in same calculation as colour pickers.
 }
 
 /**
@@ -517,6 +425,9 @@ void user_set_rgb_color(int index, uint8_t red, uint8_t green, uint8_t blue) {
  *       from older Nuphy leaks.
  */
 void led_power_handle(void) {
+    // sleep handler is setting values we shouldn't check
+    if (f_goto_sleep) return;
+
     static uint32_t interval = 0;
 
     if (timer_elapsed32(interval) < 500) // only check once in a while, less flickering for unhandled cases
@@ -533,7 +444,7 @@ void led_power_handle(void) {
     }
 
     if (side_led_last_act > 100) { // 10ms intervals
-        if (g_config.side_brightness == 0) {
+        if ((user_config.side_mode == 4 && user_config.logo_mode == 4) || (user_config.side_light == 0 && user_config.logo_light == 0)) {
             pwr_side_led_off();
         } else {
             pwr_side_led_on();
@@ -541,79 +452,76 @@ void led_power_handle(void) {
     }
 }
 
-uint8_t get_led_index(uint8_t row, uint8_t col) {
-    return g_led_config.matrix_co[row][col];
+void eeconfig_init_kb_datablock(void) {
+    // Built in function that only gets called on first init or flash
+    // Highjacking for via support since it doesn't save to it's EEPROM section explicty for user calls
+    user_config.side_mode         = DEFAULT_SIDE_MODE;
+    user_config.side_light        = DEFAULT_SIDE_LIGHT;
+    user_config.side_speed        = DEFAULT_SIDE_SPEED;
+    user_config.side_rgb          = DEFAULT_SIDE_RGB;
+    user_config.side_color        = DEFAULT_SIDE_COLOR;
+    user_config.logo_mode         = DEFAULT_LOGO_MODE;
+    user_config.logo_light        = DEFAULT_LOGO_LIGHT;
+    user_config.logo_speed        = DEFAULT_LOGO_SPEED;
+    user_config.logo_rgb          = DEFAULT_LOGO_RGB;
+    user_config.logo_color        = DEFAULT_LOGO_COLOR;
+    user_config.debounce          = DEFAULT_DEBOUNCE;
+    user_config.light_sleep_delay = DEFAULT_LIGHT_SLEEP_DELAY;
+    user_config.deep_sleep_delay  = DEFAULT_DEEP_SLEEP_DELAY;
+    user_config.sleep_enable      = DEFAULT_SLEEP_ENABLE;
+
+    eeconfig_update_kb_datablock(&user_config);
 }
 
-/**
- * @brief get LED if for first digit from double digit number. Esc = 0
- */
-uint8_t two_digit_decimals_led(uint8_t value) {
-    if (value > 99) {
-        return get_led_index(0, 0);
+void stat_show_rgb(uint8_t stat) {
+    uint8_t tens = stat / 10;
+    uint8_t ones = stat % 10;
+
+    for (uint8_t i = 1; i <= tens; i++) {
+        user_set_rgb_color(i, 0xff, 0xff, 0xff);
     }
 
-    uint8_t dec = value / 10;
-
-    uint8_t dec_led_idx = get_led_index(0, dec);
-
-    return dec_led_idx;
+    for (uint8_t i = 1; i <= ones; i++) {
+        user_set_rgb_color(16 + i, 0xff, 0xff, 0xff);
+    }
 }
 
-/**
- * @brief get LED if for second digit from double digit number 0 = 0
- */
-uint8_t two_digit_ones_led(uint8_t value) {
-    if (value > 99) {
-        return get_led_index(0, 0);
-    }
-
-    uint8_t ones = value % 10;
-    if (ones == 0) {
-        ones = 10;
-    }
-    uint8_t ones_led_idx = get_led_index(1, ones);
-
-    return ones_led_idx;
+void stat_show(void) {
+    if (f_bat_num_show) num_led_show();
+    if (f_deb_show) stat_show_rgb(user_config.debounce);
+    if (f_l_sleep_show) stat_show_rgb(user_config.light_sleep_delay);
+    if (f_d_sleep_show) stat_show_rgb(user_config.deep_sleep_delay);
 }
 
-void adjust_debounce(uint8_t dir, DEBOUNCE_EVENT debounce_event) {
-#if DEBOUNCE > 0
+void handle_debounce_change(uint8_t dir) {
     if (dir) {
-        if (debounce_event == DEBOUNCE_PRESS && g_config.debounce_press_ms < 99) {
-            g_config.debounce_press_ms += DEBOUNCE_STEP;
-        } else if (debounce_event == DEBOUNCE_RELEASE && g_config.debounce_release_ms < 99) {
-            g_config.debounce_release_ms += DEBOUNCE_STEP;
-        }
-    } else if (!dir) {
-        if (debounce_event == DEBOUNCE_PRESS && g_config.debounce_press_ms > 0) {
-            g_config.debounce_press_ms -= DEBOUNCE_STEP;
-        } else if (debounce_event == DEBOUNCE_RELEASE && g_config.debounce_release_ms > 0) {
-            g_config.debounce_release_ms -= DEBOUNCE_STEP;
-        }
+        if (user_config.debounce == DEBOUNCE_MAX) return;
+        user_config.debounce++;
+    } else {
+        if (user_config.debounce == 1) return; // Debounce set to 0 is invalid
+        user_config.debounce--;
     }
-    save_config_to_eeprom();
-#endif
+    eeconfig_update_kb_datablock(&user_config);
 }
 
-void adjust_sleep_timeout(uint8_t dir) {
-    if (g_config.sleep_toggle) {
-        if (g_config.sleep_timeout > 1 && !dir) {
-            g_config.sleep_timeout -= SLEEP_TIMEOUT_STEP;
-        } else if (g_config.sleep_timeout < 60 && dir) {
-            g_config.sleep_timeout += SLEEP_TIMEOUT_STEP;
-        }
-        save_config_to_eeprom();
+void handle_light_sleep_change(uint8_t dir) {
+    if (dir) {
+        if (user_config.light_sleep_delay == SLEEP_MAX) return;
+        user_config.light_sleep_delay++;
+    } else {
+        if (user_config.light_sleep_delay == 1) return;
+        user_config.light_sleep_delay--;
     }
+    eeconfig_update_kb_datablock(&user_config);
 }
 
-uint32_t get_sleep_timeout(void) {
-    if (!g_config.sleep_toggle) return 0;
-    return g_config.sleep_timeout * 60 * 1000 / TIMER_STEP;
-}
-
-void toggle_deep_sleep(void) {
-    f_deep_sleep_show          = 1;
-    g_config.deep_sleep_toggle = !g_config.deep_sleep_toggle;
-    save_config_to_eeprom();
+void handle_deep_sleep_change(uint8_t dir) {
+    if (dir) {
+        if (user_config.deep_sleep_delay == SLEEP_MAX) return;
+        user_config.deep_sleep_delay++;
+    } else {
+        if (user_config.deep_sleep_delay == 1) return;
+        user_config.deep_sleep_delay--;
+    }
+    eeconfig_update_kb_datablock(&user_config);
 }

@@ -17,10 +17,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#define WIRED_ONLY 0
-#define WIRELESS 1
-#define MODE WIRELESS
-
 #define DYNAMIC_KEYMAP_MACRO_DELAY 8
 #define TAPPING_TERM 200
 #define TAP_CODE_DELAY 8
@@ -50,32 +46,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define SD1_RX_PIN B7
 #define SD1_RX_PAL_MODE 0
 
-#define EECONFIG_KB_DATA_SIZE 18
-#ifdef VIA_ENABLE
-#    define VIA_EEPROM_CUSTOM_CONFIG_SIZE 20 // sizeof via_config
-#endif
-#ifdef RGB_MATRIX_LED_COUNT
-#    undef RGB_MATRIX_LED_COUNT
-#endif
-#define RGB_MATRIX_LED_COUNT 101 // 93  // RGB总灯数 (88轴灯+5侧灯) 88 + 5 + 7
-
-#define RGB_MATRIX_SLEEP
-
-// #define DEBUG_MATRIX_SCAN_RATE
-
-// NOTE: uncomment if you want to have random colors in Reactive RGB effects
-// #define RGB_MATRIX_SOLID_REACTIVE_GRADIENT_MODE
-
-#define DEBOUNCE_STEP 1
-
 // USB sleep workaround :D
 #ifdef USB_SUSPEND_WAKEUP_DELAY
 #    undef USB_SUSPEND_WAKEUP_DELAY
 #endif
 #define USB_SUSPEND_WAKEUP_DELAY 50
 
-// sleep timeout change step (minutes)
-#define SLEEP_TIMEOUT_STEP 1
 // #define LED_HITS_TO_REMEMBER 16
 #define WS2812_SPI_USE_CIRCULAR_BUFFER
 
@@ -84,29 +60,28 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 // use dedicated timer for wait_us interrupts instead on ChibiOS defaulting to minimum 100us even if you sleep for 10us
 #define WAIT_US_TIMER GPTD14
 
+#define EECONFIG_KB_DATA_SIZE 14
+
 /*
  * DEFAULT VALUES FOR INITIAL CONFIG to allow override in user keymap
  */
 #define RGB_MATRIX_DEFAULT_MODE RGB_MATRIX_CUSTOM_position_mode
 #define RGB_DEFAULT_COLOR 168
 
-#define DEFAULT_SLEEP_TOGGLE true
-#define DEFAULT_USB_SLEEP_TOGGLE false
-#define DEFAULT_DEEP_SLEEP_TOGGLE true
-#define DEFAULT_SLEEP_TIMEOUT 5
-#define DEFAULT_CAPS_INDICATOR_TYPE CAPS_INDICATOR_SIDE
-#define DEFAULT_BATTERY_INDICATOR_BRIGHTNESS 100
-#define DEFAULT_LIGHT_CUSTOM_KEYS 0
-#define DEFAULT_SIDE_MODE 0
-#define DEFAULT_SIDE_BRIGHTNESS 3
-#define DEFAULT_SIDE_SPEED 2
-#define DEFAULT_SIDE_RGB 1
-#define DEFAULT_SIDE_COLOR 0
-#define DEFAULT_LOGO_MODE 0
-#define DEFAULT_LOGO_BRIGHTNESS 3
-#define DEFAULT_LOGO_SPEED 2
-#define DEFAULT_LOGO_RGB 1
-#define DEFAULT_LOGO_COLOR 0
+#define DEFAULT_SIDE_MODE            0
+#define DEFAULT_SIDE_LIGHT           3
+#define DEFAULT_SIDE_SPEED           2
+#define DEFAULT_SIDE_RGB             1
+#define DEFAULT_SIDE_COLOR           0
+#define DEFAULT_LOGO_MODE            0
+#define DEFAULT_LOGO_LIGHT           3
+#define DEFAULT_LOGO_SPEED           2
+#define DEFAULT_LOGO_RGB             1
+#define DEFAULT_LOGO_COLOR           0
+#define DEFAULT_DEBOUNCE             DEBOUNCE
+#define DEFAULT_LIGHT_SLEEP_DELAY    2
+#define DEFAULT_DEEP_SLEEP_DELAY     6
+#define DEFAULT_SLEEP_ENABLE         true
 /*
  * END OF DEFAULT VALUES
  */

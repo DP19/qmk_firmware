@@ -17,7 +17,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-#include <stdint.h>
 #include "quantum/quantum.h"
 
 typedef enum {
@@ -40,82 +39,76 @@ typedef enum {
 
 } TYPE_RX_STATE;
 
-typedef enum {
-    CAPS_INDICATOR_SIDE = 0,
-    CAPS_INDICATOR_UNDER_KEY,
-    CAPS_INDICATOR_BOTH,
-    CAPS_INDICATOR_OFF,
-} CAPS_LOCK_INDICATION;
 
-typedef enum { DEBOUNCE_PRESS = 0, DEBOUNCE_RELEASE } DEBOUNCE_EVENT;
+#define RF_IDLE          0
+#define RF_PAIRING       1
+#define RF_LINKING       2
+#define RF_CONNECT       3
+#define RF_DISCONNECT    4
+#define RF_SLEEP         5
+#define RF_SNIF          6
+#define RF_INVAILD       0XFE
+#define RF_ERR_STATE     0XFF
+#define RF_WAKE          0XA5 //made up
 
-#define RF_IDLE 0
-#define RF_PAIRING 1
-#define RF_LINKING 2
-#define RF_CONNECT 3
-#define RF_DISCONNECT 4
-#define RF_SLEEP 5
-#define RF_SNIF 6
-#define RF_INVAILD 0XFE
-#define RF_ERR_STATE 0XFF
-#define RF_WAKE 0XA5 // made this up
+#define CMD_POWER_UP     0XF0
+#define CMD_SLEEP        0XF1
+#define CMD_HAND         0XF2
+#define CMD_SNIF         0XF3
+#define CMD_24G_SUSPEND  0XF4
+#define CMD_IDLE_EXIT    0XFE
 
-#define CMD_POWER_UP 0XF0
-#define CMD_SLEEP 0XF1
-#define CMD_HAND 0XF2
-#define CMD_SNIF 0XF3
-#define CMD_24G_SUSPEND 0XF4
-#define CMD_IDLE_EXIT 0XFE
+#define CMD_RPT_MS       0XE0
+#define CMD_RPT_BYTE_KB  0XE1
+#define CMD_RPT_BIT_KB   0XE2
+#define CMD_RPT_CONSUME  0XE3
+#define CMD_RPT_SYS      0XE4
 
-#define CMD_RPT_MS 0XE0
-#define CMD_RPT_BYTE_KB 0XE1
-#define CMD_RPT_BIT_KB 0XE2
-#define CMD_RPT_CONSUME 0XE3
-#define CMD_RPT_SYS 0XE4
-
-#define CMD_SET_LINK 0XC0
-#define CMD_SET_CONFIG 0XC1
-#define CMD_GET_CONFIG 0XC2
-#define CMD_SET_NAME 0XC3
-#define CMD_GET_NAME 0XC4
-#define CMD_CLR_DEVICE 0XC5
-#define CMD_NEW_ADV 0XC7
-#define CMD_RF_STS_SYSC 0XC9
+#define CMD_SET_LINK     0XC0
+#define CMD_SET_CONFIG   0XC1
+#define CMD_GET_CONFIG   0XC2
+#define CMD_SET_NAME     0XC3
+#define CMD_GET_NAME     0XC4
+#define CMD_CLR_DEVICE   0XC5
+#define CMD_NEW_ADV      0XC7
+#define CMD_RF_STS_SYSC  0XC9
 #define CMD_SET_24G_NAME 0XCA
-#define CMD_GO_TEST 0XCF
-#define CMD_RF_DFU 0XB1
-#define CMD_NULL 0X00 // I made this up, don't know if it exists. For tracking RX State
+#define CMD_GO_TEST      0XCF
+#define CMD_RF_DFU       0XB1
+#define CMD_NULL         0X00 // I made this up, don't know if it exists. For tracking RX State
 
-#define CMD_WRITE_DATA 0X80
-#define CMD_READ_DATA 0X81
+#define CMD_WRITE_DATA   0X80
+#define CMD_READ_DATA    0X81
 
-#define LINK_RF_24 0
-#define LINK_BT_1 1
-#define LINK_BT_2 2
-#define LINK_BT_3 3
-#define LINK_USB 4
+#define LINK_RF_24       0
+#define LINK_BT_1        1
+#define LINK_BT_2        2
+#define LINK_BT_3        3
+#define LINK_USB         4
 
-#define UART_HEAD 0x5A
-#define FUNC_VALID_LEN 32
-#define UART_MAX_LEN 64
+#define FUNC_VALID_LEN   32
+#define UART_HEAD        0x5A
+#define UART_MAX_LEN     64
 
-#define SYS_SW_WIN 0xa1
-#define SYS_SW_MAC 0xa2
+#define SYS_SW_WIN        0xa1
+#define SYS_SW_MAC        0xa2
 
-#define RF_LINK_SHOW_TIME 300
+#define RF_LINK_SHOW_TIME 200
 
-#define HOST_USB_TYPE 0
-#define HOST_BLE_TYPE 1
-#define HOST_RF_TYPE 2
+#define HOST_USB_TYPE     0
+#define HOST_BLE_TYPE     1
+#define HOST_RF_TYPE      2
 
-#define LINK_TIMEOUT (100 * 120)
-#define LINK_TIMEOUT_ALT (100 * 5)
-#define TIMER_STEP 10
-#define POWER_DOWN_DELAY (24)
+#define LINK_TIMEOUT      (100 * 60)
+#define POWER_DOWN_DELAY  (24)
 
-#define RF_LONG_PRESS_DELAY 30
+#define RF_LONG_PRESS_DELAY   30
 #define DEV_RESET_PRESS_DELAY 30
-#define RGB_TEST_PRESS_DELAY 30
+#define RF_DFU_PRESS_DELAY    30
+#define RGB_TEST_PRESS_DELAY  30
+
+#define DEBOUNCE_MAX 25
+#define SLEEP_MAX 20
 
 typedef struct {
     uint8_t  RXDState;
@@ -140,10 +133,29 @@ typedef struct {
     uint8_t sys_sw_state;
 } DEV_INFO_STRUCT;
 
+typedef struct
+{
+    uint8_t side_mode;   // Side Effect
+    uint8_t side_light;  // Halo Brightness
+    uint8_t side_speed;  // Halo Speed
+    uint8_t side_rgb;    // Halo On/Off - Not toggled directly
+    uint8_t side_color; // Halo Color
+    uint8_t logo_mode;   // Logo Effect
+    uint8_t logo_light;  // Logo Brightness
+    uint8_t logo_speed;  // Logo Speed
+    uint8_t logo_rgb;    // Logo On/Off
+    uint8_t logo_color; // Logo Color
+    uint8_t debounce;
+    uint8_t light_sleep_delay;
+    uint8_t deep_sleep_delay;
+    bool    sleep_enable :1;
+} user_config_t;
+
+_Static_assert(sizeof(user_config_t) == EECONFIG_KB_DATA_SIZE, "Mismatch in keyboard EECONFIG stored data");
+
 extern bool          f_wakeup_prepare;
-extern bool          f_sleep_show;
-extern bool          f_usb_sleep_show;
-extern bool          f_deep_sleep_show;
+extern uint8_t       rf_blink_cnt; // connection blink count
+extern bool          f_goto_sleep;
 extern bool          f_dial_sw_init_ok;
 
 void    dev_sts_sync(void);
@@ -152,13 +164,20 @@ void    rf_device_init(void);
 void    uart_send_report_repeat(void);
 void    uart_receive_pro(void);
 void    uart_send_report(uint8_t report_type, uint8_t *report_buf, uint8_t report_size);
-void    side_speed_control(uint8_t dir);
-void    side_light_control(uint8_t dir);
-void    side_colour_control(uint8_t dir);
-void    side_mode_control(uint8_t dir);
+
+void    side_light_speed_control(uint8_t dir);
+void    side_light_level_control(uint8_t dir);
+void    side_color_control(void);
+void    side_mode_control(void);
+
+void    logo_light_speed_control(uint8_t dir);
+void    logo_light_level_control(uint8_t dir);
+void    logo_side_color_control(void);
+void    logo_side_mode_control(void);
+
 void    side_led_show(void);
 void    sleep_handle(void);
-void    update_bat_pct_rgb(void);
+void    num_led_show(void);
 void    rgb_test_show(void);
 void    gpio_init(void);
 void    long_press_key(void);
@@ -167,28 +186,12 @@ void    switch_dev_link(uint8_t mode);
 void    dial_sw_scan(void);
 void    dial_sw_fast_scan(void);
 void    timer_pro(void);
-void    load_eeprom_data(void);
-void    kb_config_reset(void);
+void    led_power_handle(void);
 void    user_set_rgb_color(int index, uint8_t red, uint8_t green, uint8_t blue);
-uint8_t get_led_index(uint8_t row, uint8_t col);
+void    stat_show(void);
+void    handle_debounce_change(uint8_t dir);
+void    handle_light_sleep_change(uint8_t dir);
+void    handle_deep_sleep_change(uint8_t dir);
 uint8_t uart_send_cmd(uint8_t cmd, uint8_t ack_cnt, uint8_t delayms);
 
-void sleep_handle(void);
-void led_power_handle(void);
-void toggle_caps_indication(void);
-void toggle_usb_sleep(void);
-
-uint8_t  two_digit_decimals_led(uint8_t value);
-uint8_t  two_digit_ones_led(uint8_t value);
-void     adjust_debounce(uint8_t dir, DEBOUNCE_EVENT debounce_event);
-uint32_t get_sleep_timeout(void);
-void     adjust_sleep_timeout(uint8_t dir);
-
-// led power control for sleep
-void pwr_rgb_led_off(void);
-void pwr_rgb_led_on(void);
-void pwr_side_led_off(void);
-void pwr_side_led_on(void);
-void led_pwr_sleep_handle(void);
-void led_pwr_wake_handle(void);
-void toggle_deep_sleep(void);
+extern  void exit_light_sleep(void);

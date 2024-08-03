@@ -1,6 +1,7 @@
 SRC += user_kb.c
 SRC += rf.c
 SRC += side.c side_driver.c side_logo.c
+SRC += via_kb.c
 
 # can be separated with needed fields implemented in ansi.h
 SRC += mcu_pwr.c sleep.c debounce.c rf_driver.c rf_queue.c

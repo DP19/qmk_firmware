@@ -23,37 +23,25 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "user_kb.h"
 #include "ansi.h"
 
-#ifdef VIA_ENABLE
-#    include "eeprom.h"
-#    include "via.h"
-#else
-#    include "eeconfig.h"
-#endif
-
 extern bool            f_rf_sw_press;
 extern bool            f_sleep_show;
 extern bool            f_dev_reset_press;
 extern bool            f_rgb_test_press;
+extern bool            f_rf_dfu_press;
 extern bool            f_bat_hold;
-extern bool            f_debounce_press_show;
-extern bool            f_debounce_release_show;
-extern bool            f_sleep_timeout_show;
 extern uint32_t        no_act_time;
 extern uint8_t         rf_sw_temp;
 extern uint16_t        rf_sw_press_delay;
 extern uint16_t        rf_linking_time;
+extern user_config_t   user_config;
 extern DEV_INFO_STRUCT dev_info;
 extern uint8_t         rf_blink_cnt;
 
-extern void light_speed_contol(uint8_t fast);
-extern void light_level_control(uint8_t brighten);
-extern void side_colour_control(uint8_t dir);
-extern void side_mode_control(uint8_t dir);
-extern void logo_light_speed_contol(uint8_t fast);
-extern void logo_light_level_control(uint8_t brighten);
-extern void logo_side_colour_control(uint8_t dir);
-extern void logo_side_mode_control(uint8_t dir);
-extern void exit_light_sleep(void);
+extern bool f_bat_num_show;
+extern bool f_deb_show;
+extern bool f_l_sleep_show;
+extern bool f_d_sleep_show;
+
 
 bool pre_process_record_kb(uint16_t keycode, keyrecord_t *record) {
     no_act_time     = 0;
@@ -88,7 +76,6 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
 
-#if (MODE == WIRELESS)
         case LNK_RF:
             if (record->event.pressed) {
                 if (dev_info.link_mode != LINK_USB) {
@@ -164,7 +151,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
                 }
             }
             return false;
-#endif
+
         case WIN_LOCK:
             if (record->event.pressed) {
                 keymap_config.no_gui = !keymap_config.no_gui;
@@ -191,37 +178,37 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 
         case SIDE_VAI:
             if (record->event.pressed) {
-                light_level_control(1);
+                side_light_level_control(1);
             }
             return false;
 
         case SIDE_VAD:
             if (record->event.pressed) {
-                light_level_control(0);
+                side_light_level_control(0);
             }
             return false;
 
         case SIDE_MOD:
             if (record->event.pressed) {
-                side_mode_control(1);
+                side_mode_control();
             }
             return false;
 
         case SIDE_HUI:
             if (record->event.pressed) {
-                side_colour_control(1);
+                side_color_control();
             }
             return false;
 
         case SIDE_SPI:
             if (record->event.pressed) {
-                light_speed_contol(1);
+                side_light_speed_control(1);
             }
             return false;
 
         case SIDE_SPD:
             if (record->event.pressed) {
-                light_speed_contol(0);
+                side_light_speed_control(0);
             }
             return false;
 
@@ -237,22 +224,22 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             return false;
         case LOGO_MOD:
             if (record->event.pressed) {
-                logo_side_mode_control(1);
+                logo_side_mode_control();
             }
             return false;
         case LOGO_HUI:
             if (record->event.pressed) {
-                logo_side_colour_control(1);
+                logo_side_color_control();
             }
             return false;
         case LOGO_SPI:
             if (record->event.pressed) {
-                logo_light_speed_contol(1);
+                logo_light_speed_control(1);
             }
             return false;
         case LOGO_SPD:
             if (record->event.pressed) {
-                logo_light_speed_contol(0);
+                logo_light_speed_control(0);
             }
             return false;
 
@@ -303,15 +290,6 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             f_deb_show = record->event.pressed;
             return false;
 
-        case DEB_RESET:
-            if (record->event.pressed) {
-                user_config.debounce = DEFAULT_DEBOUNCE;
-                eeconfig_update_kb_datablock(&user_config);
-            } else {
-                unregister_code16(keycode);
-            }
-            return false;
-
         case L_SLP_I:
             if (record->event.pressed) {
                 handle_light_sleep_change(1);
@@ -326,15 +304,6 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 
         case L_SLP_SHOW:
             f_l_sleep_show = record->event.pressed;
-            return false;
-
-        case L_SLP_RESET:
-            if (record->event.pressed) {
-                user_config.light_sleep_delay = DEFAULT_LIGHT_SLEEP_DELAY;
-                eeconfig_update_kb_datablock(&user_config);
-            } else {
-                unregister_code16(keycode);
-            }
             return false;
 
         case D_SLP_I:
@@ -353,15 +322,6 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             f_d_sleep_show = record->event.pressed;
             return false;
 
-        case D_SLP_RESET:
-            if (record->event.pressed) {
-                user_config.deep_sleep_delay = DEFAULT_DEEP_SLEEP_DELAY;
-                eeconfig_update_kb_datablock(&user_config);
-            } else {
-                unregister_code16(keycode);
-            }
-            return false;
-
         default:
             return true;
     }
@@ -371,118 +331,43 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 /* qmk keyboard post init */
 void keyboard_post_init_kb(void) {
     gpio_init();
-
-#if (MODE == WIRELESS)
     rf_uart_init();
     wait_ms(500);
     rf_device_init();
-#endif
     break_all_key();
     eeconfig_read_kb_datablock(&user_config);
     dial_sw_fast_scan();
 }
 
 bool rgb_matrix_indicators_kb(void) {
+    stat_show();
+
     if (rf_blink_cnt) {
-        uint8_t col = 4;
         if (dev_info.link_mode >= LINK_BT_1 && dev_info.link_mode <= LINK_BT_3) {
-            user_set_rgb_color(dev_info.link_mode, 0, 0, 0x80);
+            user_set_rgb_color(0 + dev_info.link_mode, 0, 0, 0x80); //FIX index
         } else if (dev_info.link_mode == LINK_RF_24) {
-            user_set_rgb_color(4, 0, 0x80, 0);
+            user_set_rgb_color(0 + 4, 0, 0x80, 0);
         }
-        user_set_rgb_color(get_led_index(1, col), 0, 0, 0x80);
     }
+
+    if (keymap_config.no_gui) {
+        user_set_rgb_color(72, 0x00, 0x80, 0x00);
+    }
+
+    led_power_handle();
 
     return true;
-}
-
-bool rgb_matrix_indicators_advanced_kb(uint8_t led_min, uint8_t led_max) {
-    if (keymap_config.no_gui) {
-        // fixed position in top right corner, key position in matrix is (0,16), led index is (16)
-        rgb_matrix_set_color(get_led_index(0, 16), 0x00, 0x80, 0x00);
-    }
-
-    if (f_debounce_press_show) { // green numbers - press debounce
-        rgb_matrix_set_color(two_digit_decimals_led(g_config.debounce_press_ms), 0x00, 0x80, 0x00);
-        rgb_matrix_set_color(two_digit_ones_led(g_config.debounce_press_ms), 0x00, 0x80, 0x00);
-    }
-    if (f_debounce_release_show) { // red numbers - release deboucne
-        rgb_matrix_set_color(two_digit_decimals_led(g_config.debounce_release_ms), 0x80, 0x00, 0x00);
-        rgb_matrix_set_color(two_digit_ones_led(g_config.debounce_release_ms), 0x80, 0x00, 0x00);
-    }
-
-    if (f_sleep_timeout_show) { // cyan numbers - sleep timeout
-        rgb_matrix_set_color(two_digit_decimals_led(g_config.sleep_timeout), 0x00, 0x80, 0x80);
-        rgb_matrix_set_color(two_digit_ones_led(g_config.sleep_timeout), 0x00, 0x80, 0x80);
-    }
-
-    uint8_t showNumLock = 0;
-    if (dev_info.link_mode != LINK_USB) {
-        showNumLock = dev_info.rf_led & 0x01;
-    } else {
-        showNumLock = host_keyboard_led_state().num_lock;
-    }
-
-    if (showNumLock) {
-        rgb_matrix_set_color(get_led_index(0, 15), 0x00, 0x80, 0x00);
-    }
-
-    rgb_matrix_set_color(RGB_MATRIX_LED_COUNT - 1, 0, 0, 0);
-
-    if (g_config.toggle_custom_keys_highlight) {
-        uint8_t layer = get_highest_layer(layer_state);
-        switch (layer) {
-            case 0:
-            case 2:
-                break;
-            default: {
-                for (uint8_t row = 0; row < MATRIX_ROWS; ++row) {
-                    for (uint8_t col = 0; col < MATRIX_COLS; ++col) {
-                        uint8_t index = g_led_config.matrix_co[row][col];
-
-                        if (index >= led_min && index <= led_max && index != NO_LED) {
-                            int keycode = keymap_key_to_keycode(layer, (keypos_t){col, row});
-
-                            if (keycode >= LOGO_VAI && keycode <= LOGO_SPD) {
-                                rgb_matrix_set_color(index, RGB_WHITE);
-                            } else if (keycode >= SIDE_VAI && keycode <= SIDE_SPD) {
-                                rgb_matrix_set_color(index, RGB_YELLOW);
-                            } else if (keycode >= DEBOUNCE_PRESS_INC && keycode <= DEBOUNCE_PRESS_SHOW) {
-                                rgb_matrix_set_color(index, 0, 255, 0);
-                            } else if (keycode >= DEBOUNCE_RELEASE_INC && keycode <= DEBOUNCE_RELEASE_SHOW) {
-                                rgb_matrix_set_color(index, 255, 0, 0);
-                            } else if (keycode == SLEEP_MODE || keycode == TOG_USB_SLP || keycode == TOG_DEEP_SLEEP || (keycode >= SLEEP_TIMEOUT_INC && keycode <= SLEEP_TIMEOUT_SHOW)) {
-                                rgb_matrix_set_color(index, RGB_CYAN);
-                            } else if (keycode >= LNK_USB && keycode <= LNK_BLE3) {
-                                if (dev_info.link_mode != LINK_USB) {
-                                    rgb_matrix_set_color(index, RGB_BLUE);
-                                }
-                            } else if (keycode > KC_NUM_LOCK && keycode <= KC_KP_DOT) {
-                                rgb_matrix_set_color(index, RGB_RED);
-                            } else if (keycode > KC_TRNS) {
-                                rgb_matrix_set_color(index, 225, 65, 140);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    return rgb_matrix_indicators_advanced_user(led_min, led_max);
 }
 
 /* qmk housekeeping task */
 void housekeeping_task_kb(void) {
     timer_pro();
 
-#if (MODE == WIRELESS)
     uart_receive_pro();
 
     uart_send_report_repeat();
 
     dev_sts_sync();
-#endif
 
     long_press_key();
 
@@ -492,227 +377,3 @@ void housekeeping_task_kb(void) {
 
     sleep_handle();
 }
-
-kb_config_t g_config;
-
-void init_g_config(void) {
-    g_config.sleep_toggle                 = DEFAULT_SLEEP_TOGGLE;
-    g_config.usb_sleep_toggle             = DEFAULT_USB_SLEEP_TOGGLE;
-    g_config.deep_sleep_toggle            = DEFAULT_DEEP_SLEEP_TOGGLE;
-    g_config.sleep_timeout                = DEFAULT_SLEEP_TIMEOUT;
-    g_config.debounce_press_ms            = DEBOUNCE;
-    g_config.debounce_release_ms          = DEBOUNCE;
-    g_config.caps_indicator_type          = DEFAULT_CAPS_INDICATOR_TYPE;
-    g_config.battery_indicator_brightness = DEFAULT_BATTERY_INDICATOR_BRIGHTNESS;
-    g_config.toggle_custom_keys_highlight = DEFAULT_LIGHT_CUSTOM_KEYS;
-    g_config.side_mode                    = DEFAULT_SIDE_MODE;
-    g_config.side_brightness              = DEFAULT_SIDE_BRIGHTNESS;
-    g_config.side_speed                   = DEFAULT_SIDE_SPEED;
-    g_config.side_rgb                     = DEFAULT_SIDE_RGB;
-    g_config.side_color                   = DEFAULT_SIDE_COLOR;
-    g_config.logo_mode                    = DEFAULT_LOGO_MODE;
-    g_config.logo_brightness              = DEFAULT_LOGO_BRIGHTNESS;
-    g_config.logo_speed                   = DEFAULT_LOGO_SPEED;
-    g_config.logo_rgb                     = DEFAULT_LOGO_RGB;
-    g_config.logo_color                   = DEFAULT_LOGO_COLOR;
-}
-
-void load_config_from_eeprom(void) {
-#ifdef VIA_ENABLE
-    eeprom_read_block(&g_config, ((void *)VIA_EEPROM_CUSTOM_CONFIG_ADDR), sizeof(g_config));
-#else
-    eeconfig_read_kb_datablock(&g_config);
-#endif
-}
-
-void save_config_to_eeprom(void) {
-#ifdef VIA_ENABLE
-    eeprom_update_block(&g_config, ((void *)VIA_EEPROM_CUSTOM_CONFIG_ADDR), sizeof(g_config));
-#else
-    eeconfig_update_kb_datablock(&g_config);
-#endif
-}
-
-#ifdef VIA_ENABLE
-void via_init_kb(void) {
-    init_g_config();
-    // If the EEPROM has the magic, the data is good.
-    // OK to load from EEPROM
-    if (eeconfig_is_enabled()) {
-        load_config_from_eeprom();
-    } else {
-        save_config_to_eeprom();
-        // DO NOT set EEPROM valid here, let caller do this
-    }
-}
-
-void via_config_set_value(uint8_t *data)
-
-{
-    // data = [ value_id, value_data ]
-
-    uint8_t *value_id   = &(data[0]);
-    uint8_t *value_data = &(data[1]);
-
-    switch (*value_id) {
-        case id_usb_sleep_toggle:
-            g_config.usb_sleep_toggle = *value_data;
-            break;
-        case id_deep_sleep_toggle:
-            g_config.deep_sleep_toggle = *value_data;
-            break;
-        case id_debounce_press:
-            g_config.debounce_press_ms = *value_data;
-            break;
-        case id_debounce_release:
-            g_config.debounce_release_ms = *value_data;
-            break;
-        case id_sleep_timeout:
-            g_config.sleep_timeout = *value_data + 1;
-            break;
-        case id_caps_indicator_type:
-            g_config.caps_indicator_type = *value_data;
-            break;
-        case id_sleep_toggle:
-            g_config.sleep_toggle = *value_data;
-            break;
-
-        case id_side_light_mode:
-            g_config.side_mode = *value_data;
-            break;
-        case id_side_light_speed:
-            g_config.side_speed = *value_data;
-            break;
-        case id_side_light_color:
-            g_config.side_color = *value_data;
-            break;
-        case id_side_light_brightness:
-            g_config.side_brightness = *value_data;
-            break;
-
-        case id_logo_light_mode:
-            g_config.logo_mode = *value_data;
-            break;
-        case id_logo_light_speed:
-            g_config.logo_speed = *value_data;
-            break;
-        case id_logo_light_color:
-            g_config.logo_color = *value_data;
-            break;
-        case id_logo_light_brightness:
-            g_config.logo_brightness = *value_data;
-            break;
-        case id_battery_indicator_brightness:
-            g_config.battery_indicator_brightness = *value_data;
-            break;
-        case id_toggle_custom_keys_highlight:
-            g_config.toggle_custom_keys_highlight = *value_data;
-            break;
-    }
-#    if CONSOLE_ENABLE
-    xprintf("[SET]VALUE_ID: %u DATA: %u\n", *value_id, *value_data);
-#    endif
-}
-
-void via_config_get_value(uint8_t *data) {
-    uint8_t *value_id   = &(data[0]);
-    uint8_t *value_data = &(data[1]);
-    switch (*value_id) {
-        case id_usb_sleep_toggle:
-            *value_data = g_config.usb_sleep_toggle;
-            break;
-        case id_deep_sleep_toggle:
-            *value_data = g_config.deep_sleep_toggle;
-            break;
-        case id_debounce_press:
-            *value_data = g_config.debounce_press_ms;
-            break;
-        case id_debounce_release:
-            *value_data = g_config.debounce_release_ms;
-            break;
-        case id_sleep_timeout:
-            *value_data = g_config.sleep_timeout - 1;
-            break;
-        case id_caps_indicator_type:
-            *value_data = g_config.caps_indicator_type;
-            break;
-        case id_sleep_toggle:
-            *value_data = g_config.sleep_toggle;
-            break;
-
-        case id_side_light_mode:
-            *value_data = g_config.side_mode;
-            break;
-        case id_side_light_speed:
-            *value_data = g_config.side_speed;
-            break;
-        case id_side_light_color:
-            *value_data = g_config.side_color;
-            break;
-        case id_side_light_brightness:
-            *value_data = g_config.side_brightness;
-            break;
-
-        case id_logo_light_mode:
-            *value_data = g_config.logo_mode;
-            break;
-        case id_logo_light_speed:
-            *value_data = g_config.logo_speed;
-            break;
-        case id_logo_light_color:
-            *value_data = g_config.logo_color;
-            break;
-        case id_logo_light_brightness:
-            *value_data = g_config.logo_brightness;
-            break;
-        case id_battery_indicator_brightness:
-            *value_data = g_config.battery_indicator_brightness;
-            break;
-        case id_toggle_custom_keys_highlight:
-            *value_data = g_config.toggle_custom_keys_highlight;
-            break;
-    }
-#    if CONSOLE_ENABLE
-    xprintf("[GET]VALUE_ID: %u DATA: %u\n", *value_id, *value_data);
-    xprintf("G_CONFIG_SIZE: %u \n", sizeof(g_config));
-#    endif
-}
-
-void via_custom_value_command_kb(uint8_t *data, uint8_t length) {
-    // data = [ command_id, channel_id, value_id, value_data ]
-    uint8_t *command_id = &(data[0]);
-    uint8_t *channel_id = &(data[1]);
-
-    uint8_t *value_id_and_data = &(data[2]);
-
-    if (*channel_id == id_custom_channel) {
-        switch (*command_id)
-
-        {
-            case id_custom_set_value: {
-                via_config_set_value(value_id_and_data);
-                break;
-            }
-            case id_custom_get_value: {
-                via_config_get_value(value_id_and_data);
-                break;
-            }
-            case id_custom_save: {
-                save_config_to_eeprom();
-                break;
-            }
-            default: {
-                // Unhandled message.
-                *command_id = id_unhandled;
-                break;
-            }
-        }
-        return;
-    }
-
-    // Return the unhandled state
-    *command_id = id_unhandled;
-
-    // DO NOT call raw_hid_send(data,length) here, let caller do this
-}
-#endif

@@ -15,49 +15,47 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "config.h"
-#include "gpio.h"
 #include "user_kb.h"
 #include "mcu_stm32f0xx.h"
 #include "mcu_pwr.h"
-#include "rgb_matrix.h"
 
-// from @adi4086
 static const pin_t row_pins[MATRIX_ROWS] = MATRIX_ROW_PINS;
 static const pin_t col_pins[MATRIX_COLS] = MATRIX_COL_PINS;
 
-//------------------------------------------------
-// 外部变量
 extern DEV_INFO_STRUCT dev_info;
-// extern bool            flush_side_leds;
 
-// static bool f_usb_deinit         = 0;
 static bool side_led_powered_off = 0;
+static bool side_led_on          = 0;
 static bool rgb_led_powered_off  = 0;
+static bool rgb_led_on           = 0;
 static bool tim6_enabled         = false;
-static bool sleeping             = false;
 
-static bool rgb_led_on  = 0;
-static bool side_led_on = 0;
 
 void rgb_matrix_update_pwm_buffers(void);
 void clear_report_buffer_and_queue(void);
 
 /** ================================================================
- * @brief   关闭USB
+ * @brief   Turn Off USB
  *
  ================================================================*/
 void m_deinit_usb_072(void) {
     GPIO_InitTypeDef GPIO_InitStructure = {0};
 
-    // 复位USB寄存器
+#if (0)
+    // Call the qmk library to close USB
+    void close_usb(void);
+    close_usb();
+#endif
+
+    // Reset USB register
     RCC_APB1PeriphResetCmd(RCC_APB1RSTR_USBRST, ENABLE);
     RCC_APB1PeriphResetCmd(RCC_APB1RSTR_USBRST, DISABLE);
     wait_ms(10);
 
-    // 关闭USB时钟
+    // Turn off USB clock
     RCC_APB1PeriphClockCmd(RCC_APB1ENR_USBEN, DISABLE);
 
-    // GPIO恢复为悬浮状态
+    // GPIO returns to suspended state
     GPIO_InitStructure.GPIO_Pin  = GPIO_Pin_11 | GPIO_Pin_12;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
     GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
@@ -65,11 +63,12 @@ void m_deinit_usb_072(void) {
 }
 
 /** ================================================================
- * @brief   低功耗处理
+ * @brief   Low power processing
  *
  ================================================================*/
 #include "hal_usb.h"
 #include "usb_main.h"
+void idle_enter_sleep(void);
 void SYSCFG_EXTILineConfig(uint8_t EXTI_PortSourceGPIOx, uint8_t EXTI_PinSourcex) {
     uint32_t tmp = 0x00;
 
@@ -84,6 +83,11 @@ void SYSCFG_EXTILineConfig(uint8_t EXTI_PortSourceGPIOx, uint8_t EXTI_PinSourcex
 #define EXTI_PortSourceGPIOC ((uint8_t)0x02)
 #define EXTI_PortSourceGPIOD ((uint8_t)0x03)
 
+/**
+ * @brief Wake up from deep sleep
+ * @note This is triggered by an interrupt event.
+ *       This is mostly Nuphy's unreleased logic with cleanup/refactoring by me.
+ */
 #include "usb_main.h"
 /**
  * @brief  Enter deep sleep
@@ -178,16 +182,12 @@ void exit_deep_sleep(void) {
     matrix_init_custom();
 
     // connection mode switch pin
-#if (MODE == WIRELESS)
     gpio_set_pin_input_high(DEV_MODE_PIN);
-#endif
     // keyboard OS switch pin
     gpio_set_pin_input_high(SYS_MODE_PIN);
 
-#if (MODE == WIRELESS)
     gpio_set_pin_output(NRF_WAKEUP_PIN);
     gpio_write_pin_high(NRF_WAKEUP_PIN);
-#endif
 
     led_pwr_wake_handle();
 
@@ -198,14 +198,7 @@ void exit_deep_sleep(void) {
     if (tim6_enabled) TIM_Cmd(TIM6, ENABLE);
 
         // Should re-init USB regardless probably if it was deinitialized.
-#if (MODE == WIRELESS)
     uart_send_cmd(CMD_HAND, 0, 1);
-#endif
-    if (dev_info.link_mode == LINK_USB) {
-        usb_lld_wakeup_host(&USB_DRIVER);
-        restart_usb_driver(&USB_DRIVER);
-    }
-
     // flag for RF wakeup workload.
     dev_info.rf_state = RF_WAKE;
 }
@@ -215,21 +208,16 @@ void exit_deep_sleep(void) {
  * @note This is Nuphy's "open sourced" sleep logic. It's not deep sleep.
  */
 void enter_light_sleep(void) {
-#if (MODE == WIRELESS)
     dev_sts_sync();
-
-    if (dev_info.rf_state == RF_CONNECT)
-        uart_send_cmd(CMD_SET_CONFIG, 5, 5);
-    else
+    if (dev_info.rf_state == RF_CONNECT) {
+        // leave connection state
+    } else {
         uart_send_cmd(CMD_SLEEP, 5, 5);
-
-#endif
+    }
+    // power off led
     led_pwr_sleep_handle();
 
-#if (MODE == WIRELESS)
     clear_report_buffer_and_queue();
-#endif
-    sleeping = true;
 }
 
 /**
@@ -237,24 +225,18 @@ void enter_light_sleep(void) {
  * @note This is Nuphy's "open sourced" wake logic. It's not deep sleep.
  */
 void exit_light_sleep(void) {
-    sleeping = false;
-    // // NOTE: hack to force enable all leds
-    // rgb_led_powered_off  = 1;
-    // side_led_powered_off = 1;
-
     led_pwr_wake_handle();
-#if (MODE == WIRELESS)
-    uart_send_cmd(CMD_HAND, 0, 1);
-#endif
+
+    if (dev_info.rf_state != RF_CONNECT) {
+        uart_send_cmd(CMD_HAND, 0, 1);
+        // flag for RF wakeup workload.
+        dev_info.rf_state = RF_WAKE;
+    }
+
     if (dev_info.link_mode == LINK_USB) {
         usb_lld_wakeup_host(&USB_DRIVER);
         restart_usb_driver(&USB_DRIVER);
     }
-
-#if (MODE == WIRELESS)
-    // flag for RF wakeup workload.
-    dev_info.rf_state = RF_WAKE;
-#endif
 }
 
 void led_pwr_sleep_handle(void) {
@@ -278,35 +260,31 @@ void side_rgb_refresh(void);
 void led_pwr_wake_handle(void) {
     if (rgb_led_powered_off) {
         pwr_rgb_led_on();
-        // Change any LED's state so the LED driver flushes after turning on for solid colours.
-        // Without doing this, the WS2812 driver wouldn't flush as the previous state is the same as current.
-        // rgb_matrix_set_color_all(0, 0, 0);
-        rgb_matrix_update_pwm_buffers();
     }
     if (side_led_powered_off) {
         pwr_side_led_on();
-        side_rgb_refresh();
-        // flush_side_leds = true;
     }
 }
 
 void pwr_rgb_led_off(void) {
     if (!rgb_led_on) return;
     // LED power supply off
-    gpio_set_pin_output(DC_BOOST_PIN);
     gpio_write_pin_low(DC_BOOST_PIN);
     gpio_set_pin_input(DRIVER_LED_CS_PIN);
     rgb_led_on = 0;
 }
 
 void pwr_rgb_led_on(void) {
-    if (sleeping || rgb_led_on) return;
+    if (rgb_led_on) return;
     // if (rgb_led_on) return;
     // LED power supply on
     gpio_set_pin_output(DC_BOOST_PIN);
     gpio_write_pin_high(DC_BOOST_PIN);
     gpio_set_pin_output(DRIVER_LED_CS_PIN);
     gpio_write_pin_low(DRIVER_LED_CS_PIN);
+    // clear matrix
+    rgb_matrix_set_color_all(0, 0, 0);
+    rgb_matrix_update_pwm_buffers();
     rgb_led_on = 1;
 }
 
@@ -317,10 +295,10 @@ void pwr_side_led_off(void) {
 }
 
 void pwr_side_led_on(void) {
-    if (sleeping || side_led_on) return;
-    // if (side_led_on) return;
+    if (side_led_on) return;
     gpio_set_pin_output(DRIVER_SIDE_CS_PIN);
     gpio_write_pin_low(DRIVER_SIDE_CS_PIN);
+    side_rgb_refresh();
     side_led_on = 1;
 }
 

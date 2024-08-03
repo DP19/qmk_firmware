@@ -1,5 +1,5 @@
 /*
-Copyright 2023 @ Nuphy <https://nuphy.com/> (Source from jincao1, extended by Nuphy)
+Copyright 2023 @ Nuphy <https://nuphy.com/>
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "host_driver.h"
+#include "host.h"
 #include "user_kb.h"
 #include "rf_queue.h"
 
@@ -57,6 +58,7 @@ static report_buffer_t make_report_buffer(uint8_t cmd, uint8_t *buff, uint8_t le
     return report;
 }
 
+#ifdef NKRO_ENABLE
 /**
  * @brief Uart auto nkey send
  */
@@ -126,6 +128,7 @@ static void uart_auto_nkey_send(uint8_t *now_bit_report, uint8_t size) {
         report_buff_b = rpt_bit;
     }
 }
+#endif // NKRO_ENABLE
 
 static uint8_t rf_keyboard_leds(void) {
     return dev_info.rf_led;
@@ -140,14 +143,18 @@ static void rf_send_keyboard(report_keyboard_t *report) {
 }
 
 static void rf_send_nkro(report_nkro_t *report) {
+#ifdef NKRO_ENABLE
     clear_report_buffer();
     uart_auto_nkey_send(&nkro_report->mods, 16); // only need 1 byte mod + 15 byte keys
+#endif                                           // NKRO_ENABLE
 }
 
 static void rf_send_mouse(report_mouse_t *report) {
+#ifdef MOUSEKEY_ENABLE
     clear_report_buffer();
     report_buffer_t rpt = make_report_buffer(CMD_RPT_MS, &report->buttons, 5);
     send_or_queue(&rpt);
+#endif // MOUSEKEY_ENABLE
 }
 
 static void rf_send_extra_helper(uint8_t cmd, report_extra_t *report) {
@@ -163,4 +170,3 @@ static void rf_send_extra(report_extra_t *report) {
         rf_send_extra_helper(CMD_RPT_SYS, report);
     }
 }
-
