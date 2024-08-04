@@ -30,7 +30,6 @@ static bool rgb_led_powered_off  = 0;
 static bool rgb_led_on           = 0;
 static bool tim6_enabled         = false;
 
-
 void rgb_matrix_update_pwm_buffers(void);
 void clear_report_buffer_and_queue(void);
 
@@ -95,24 +94,16 @@ void SYSCFG_EXTILineConfig(uint8_t EXTI_PortSourceGPIOx, uint8_t EXTI_PinSourcex
  *       The MCU is put on a low power mode.
  */
 void enter_deep_sleep(void) {
-    //------------------------ 设置RF休眠状态
+    //------------------------ Set RF sleep state
     if (dev_info.rf_state == RF_CONNECT)
-        uart_send_cmd(CMD_SET_CONFIG, 5, 5); // 连接状态设置深度休眠时间
+        uart_send_cmd(CMD_SET_CONFIG, 5, 5); // Connection status settings deep sleep time
     else
-        uart_send_cmd(CMD_SLEEP, 5, 5); // 非连接状态直接进入深度休眠
+        uart_send_cmd(CMD_SLEEP, 5, 5); // Directly enter deep sleep when not connected
 
-    //------------------------ 非USB模式下关闭USB
-    // TODO - do we really need to deinitialize USB?
-    // Commenting this out for now. It causes USB-C chargers to crash the board on wake apparently.
-    // if (dev_info.link_mode != LINK_USB) {
-    //     f_usb_deinit = 1;
-    //     m_deinit_usb_072(); // 关闭USB
-    // }
-
-    // 关闭定时器
+    // off timer
     if (tim6_enabled) TIM_Cmd(TIM6, DISABLE);
 
-    // from @adi4086
+    //------------------------ Configure key to wake up
     for (int i = 0; i < ARRAY_SIZE(col_pins); i++) {
         gpio_set_pin_output(col_pins[i]);
         gpio_write_pin_high(col_pins[i]);
@@ -181,25 +172,24 @@ void exit_deep_sleep(void) {
     extern void matrix_init_custom(void);
     matrix_init_custom();
 
-    // connection mode switch pin
+    // Restore IO working status
     gpio_set_pin_input_high(DEV_MODE_PIN);
-    // keyboard OS switch pin
     gpio_set_pin_input_high(SYS_MODE_PIN);
 
     gpio_set_pin_output(NRF_WAKEUP_PIN);
     gpio_write_pin_high(NRF_WAKEUP_PIN);
 
+    // Power on LEDs
     led_pwr_wake_handle();
 
-    // 重新初始化系统时钟
+    // Reinitialize the system clock
     stm32_clock_init();
 
-    /* TIM6 使能 */
+    /* TIM6 Enable */
     if (tim6_enabled) TIM_Cmd(TIM6, ENABLE);
 
-        // Should re-init USB regardless probably if it was deinitialized.
+    // Send a handshake to wake up RF
     uart_send_cmd(CMD_HAND, 0, 1);
-    // flag for RF wakeup workload.
     dev_info.rf_state = RF_WAKE;
 }
 

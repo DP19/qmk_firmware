@@ -89,4 +89,3 @@ uint8_t matrix_scan_custom(matrix_row_t current_matrix[]) {
 
     return changed;
 }
-

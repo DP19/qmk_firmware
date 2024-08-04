@@ -28,9 +28,9 @@ static bool                counters_need_update;
 static bool                matrix_need_update;
 static bool                cooked_changed;
 
-extern user_config_t       user_config;
+extern user_config_t user_config;
 
-#    define DEBOUNCE_ELAPSED 0
+#define DEBOUNCE_ELAPSED 0
 
 static void update_debounce_counters_and_transfer_if_expired(matrix_row_t raw[], matrix_row_t cooked[], uint8_t num_rows, uint8_t elapsed_time);
 static void transfer_matrix_values(matrix_row_t raw[], matrix_row_t cooked[], uint8_t num_rows);

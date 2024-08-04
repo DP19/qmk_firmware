@@ -18,7 +18,6 @@ enum {
 #define FIREWORK_INDEX_LEN (158)
 #define STARRY_DATA_LEN 96
 #define TIDE_DATA_LEN 120
-#define LIGHT_SPEED_MAX 4
 
 // from side.c
 #define LIGHT_SPEED_MAX 4
@@ -26,9 +25,6 @@ enum {
 #define RF_LED_PAIR_PERIOD 250
 #define CHARGING_SHIFT 1
 #define RFLINK_SHIFT 0
-#define CHARGING_BREATHE 1
-
-#define RFLINK_BLINK 1
 #define LOW_BAT_BLINK_PRIOD 500
 
 

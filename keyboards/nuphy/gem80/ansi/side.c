@@ -125,7 +125,7 @@ void side_color_control(void) {
     }
 
     if (user_config.side_rgb) {
-        user_config.side_rgb = 0;
+        user_config.side_rgb   = 0;
         user_config.side_color = 0;
     } else {
         user_config.side_color++;
@@ -174,7 +174,7 @@ void sys_sw_led_show(void) {
     if (f_sys_show) {
         f_sys_show     = false;
         sys_show_timer = timer_read32();
-        sys_show_flag = true;
+        sys_show_flag  = true;
     }
 
     if (sys_show_flag) {
@@ -204,13 +204,13 @@ void sys_sw_led_show(void) {
  * @brief  sleep_sw_led_show.
  */
 void sleep_sw_led_show(void) {
-    static uint32_t sleep_show_timer     = 0;
-    static bool     sleep_show_flag      = false;
+    static uint32_t sleep_show_timer = 0;
+    static bool     sleep_show_flag  = false;
 
     if (f_sleep_show) {
-        f_sleep_show         = false;
-        sleep_show_timer     = timer_read32();
-        sleep_show_flag      = true;
+        f_sleep_show     = false;
+        sleep_show_timer = timer_read32();
+        sleep_show_flag  = true;
     }
 
     if (sleep_show_flag) {
@@ -242,7 +242,6 @@ void sys_led_show(void) {
         set_side_rgb(0x00, 0x80, 0x80);
     }
 }
-
 
 /**
  * @brief  light_point_playing.
@@ -665,13 +664,13 @@ void bat_percent_led(uint8_t bat_percent) {
         bat_r = 0xff, bat_g = 0x00, bat_b = 0x00;
     } else if (bat_percent <= 50) {
         bat_end_led = 1;
-        bat_r = 0xff, bat_g = 0x20, bat_b = 0x00;
+        bat_r = 0xff, bat_g = 0x40, bat_b = 0x00;
     } else if (bat_percent <= 80) {
         bat_end_led = 3;
-        bat_r = 0x80, bat_g = 0x40, bat_b = 0x00;
+        bat_r = 0xff, bat_g = 0xff, bat_b = 0x00;
     } else {
         bat_end_led = 4;
-        bat_r = 0x00, bat_g = 0x80, bat_b = 0x00;
+        bat_r = 0x00, bat_g = 0xff, bat_b = 0x00;
     }
 
     if (f_charging) {
@@ -701,7 +700,7 @@ void bat_percent_led(uint8_t bat_percent) {
  */
 
 void bat_led_show(void) {
-    static bool bat_show_flag        = true;
+    static bool     bat_show_flag    = true;
     static uint32_t bat_show_time    = 0;
     static uint32_t bat_sts_debounce = 0;
     static uint32_t bat_per_debounce = 0;

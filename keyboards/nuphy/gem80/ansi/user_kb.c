@@ -43,8 +43,8 @@ bool f_deb_show     = 0;
 bool f_l_sleep_show = 0;
 bool f_d_sleep_show = 0;
 
-uint8_t        rf_blink_cnt          = 0;
-uint8_t        rf_sw_temp            = 0;
+uint8_t        rf_blink_cnt = 0;
+uint8_t        rf_sw_temp   = 0;
 uint8_t        host_mode;
 uint16_t       rf_linking_time       = 0;
 uint16_t       rf_link_show_time     = 0;
@@ -229,8 +229,8 @@ void switch_dev_link(uint8_t mode) {
     break_all_key();
 
     dev_info.link_mode = mode;
-    dev_info.rf_state = RF_IDLE;
-    f_send_channel    = 1;
+    dev_info.rf_state  = RF_IDLE;
+    f_send_channel     = 1;
 
     if (mode == LINK_USB) {
         host_mode = HOST_USB_TYPE;
@@ -264,8 +264,8 @@ void dial_sw_scan(void) {
 
     if (dial_save != dial_scan) {
         break_all_key();
-        no_act_time       = 0;
-        rf_linking_time   = 0;
+        no_act_time     = 0;
+        rf_linking_time = 0;
 
         dial_save         = dial_scan;
         debounce          = 25;
@@ -377,7 +377,7 @@ void dial_sw_fast_scan(void) {
             default_layer_set(1 << 2);
             dev_info.sys_sw_state = SYS_SW_WIN;
 #ifdef NKRO_ENABLE
-            keymap_config.nkro    = 1;
+            keymap_config.nkro = 1;
 #endif // NKRO_ENABLE
         }
     }
@@ -482,7 +482,7 @@ void stat_show_rgb(uint8_t stat) {
     }
 
     for (uint8_t i = 1; i <= ones; i++) {
-        user_set_rgb_color(16 + i, 0xff, 0xff, 0xff);
+        user_set_rgb_color(17 + i, 0xff, 0xff, 0xff);
     }
 }
 

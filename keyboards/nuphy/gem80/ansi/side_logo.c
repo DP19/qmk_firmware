@@ -5,7 +5,7 @@
 #include "timer.h"
 #include "user_kb.h"
 
-extern user_config_t   user_config;
+extern user_config_t user_config;
 extern const uint8_t side_speed_table[6][5];
 extern const uint8_t side_light_table[6];
 extern const uint8_t light_value_tab[101];
@@ -57,7 +57,6 @@ void logo_side_color_control(void) {
             user_config.logo_color = 0;
         }
     }
-
 
     if (user_config.logo_rgb) {
         user_config.logo_rgb   = 0;

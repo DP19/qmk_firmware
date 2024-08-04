@@ -14,14 +14,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-#include "action.h"
-#include "config.h"
-#include "host.h"
-#include "keycodes.h"
-#include "rgb_matrix.h"
-#include "user_kb.h"
 #include "ansi.h"
+#include "config.h"
+#include "user_kb.h"
 
 extern bool            f_rf_sw_press;
 extern bool            f_sleep_show;
@@ -42,7 +37,6 @@ extern bool f_deb_show;
 extern bool f_l_sleep_show;
 extern bool f_d_sleep_show;
 
-
 bool pre_process_record_kb(uint16_t keycode, keyrecord_t *record) {
     no_act_time     = 0;
     rf_linking_time = 0;
@@ -59,14 +53,22 @@ bool pre_process_record_kb(uint16_t keycode, keyrecord_t *record) {
 
 /* qmk process record */
 bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
-    no_act_time     = 0;
-
     if (!process_record_user(keycode, record)) {
         return false;
     }
-    no_act_time     = 0;
+    no_act_time = 0;
 
     switch (keycode) {
+        case RF_DFU:
+            if (record->event.pressed) {
+                if (dev_info.link_mode != LINK_USB) return false;
+                f_rf_dfu_press = 1;
+                break_all_key();
+            } else {
+                f_rf_dfu_press = 0;
+            }
+            return false;
+
         case LNK_USB:
             if (record->event.pressed) {
                 break_all_key();
@@ -255,7 +257,7 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
         case SLEEP_MODE:
             if (record->event.pressed) {
                 user_config.sleep_enable = !user_config.sleep_enable;
-                f_sleep_show          = 1;
+                f_sleep_show             = 1;
                 eeconfig_update_kb_datablock(&user_config);
             }
             return false;
@@ -340,13 +342,17 @@ void keyboard_post_init_kb(void) {
 }
 
 bool rgb_matrix_indicators_kb(void) {
+    if (!rgb_matrix_indicators_user()) {
+        return false;
+    }
+    // check if any show flags are on and display
     stat_show();
 
     if (rf_blink_cnt) {
         if (dev_info.link_mode >= LINK_BT_1 && dev_info.link_mode <= LINK_BT_3) {
-            user_set_rgb_color(0 + dev_info.link_mode, 0, 0, 0x80); //FIX index
+            user_set_rgb_color(17 + dev_info.link_mode, 0, 0, 0x80);
         } else if (dev_info.link_mode == LINK_RF_24) {
-            user_set_rgb_color(0 + 4, 0, 0x80, 0);
+            user_set_rgb_color(21, 0, 0x80, 0);
         }
     }
 

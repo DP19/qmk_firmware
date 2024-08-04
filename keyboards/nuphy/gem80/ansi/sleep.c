@@ -63,12 +63,11 @@ void deep_sleep_handle(void) {
 void sleep_handle(void) {
     static uint32_t delay_step_timer     = 0;
     static uint8_t  usb_suspend_debounce = 0;
-    static uint32_t rf_disconnect_time = 0;
+    static uint32_t rf_disconnect_time   = 0;
 
     /* 50ms interval */
     if (timer_elapsed32(delay_step_timer) < 50) return;
     delay_step_timer = timer_read32();
-
 
     // sleep process
     if (f_goto_sleep) {
