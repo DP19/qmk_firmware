@@ -31,6 +31,7 @@ extern uint16_t        rf_linking_time;
 extern user_config_t   user_config;
 extern DEV_INFO_STRUCT dev_info;
 extern uint8_t         rf_blink_cnt;
+extern uint16_t        rf_link_show_time;
 
 extern bool f_bat_num_show;
 extern bool f_deb_show;
@@ -256,7 +257,10 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
 
         case SLEEP_MODE:
             if (record->event.pressed) {
-                user_config.sleep_enable = !user_config.sleep_enable;
+                if (user_config.sleep_enable)
+                    user_config.sleep_enable = false;
+                else
+                    user_config.sleep_enable = true;
                 f_sleep_show             = 1;
                 eeconfig_update_kb_datablock(&user_config);
             }
@@ -348,11 +352,11 @@ bool rgb_matrix_indicators_kb(void) {
     // check if any show flags are on and display
     stat_show();
 
-    if (rf_blink_cnt) {
+    if (rf_blink_cnt || (rf_link_show_time < RF_LINK_SHOW_TIME)) {
         if (dev_info.link_mode >= LINK_BT_1 && dev_info.link_mode <= LINK_BT_3) {
-            user_set_rgb_color(17 + dev_info.link_mode, 0, 0, 0x80);
+            user_set_rgb_color(33 - dev_info.link_mode, 0, 0, 0x80);
         } else if (dev_info.link_mode == LINK_RF_24) {
-            user_set_rgb_color(21, 0, 0x80, 0);
+            user_set_rgb_color(29, 0, 0x80, 0);
         }
     }
 

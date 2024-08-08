@@ -230,11 +230,11 @@
               "label": "Effect",
               "type": "dropdown",
               "content": ["id_side_mode", 0, 0],
-              "options": ["Wawe", "Mix", "Static", "Breath", "Off"]
+              "options": ["Wave", "Mix", "Static", "Breath", "Off"]
             },
             {
               "label": "Brightness",
-              "showIf": "{id_side_light_mode} != 4",
+              "showIf": "{id_side_mode} != 4",
               "type": "range",
               "content": ["id_side_light_brightness", 0, 1],
               "options": [0, 5]
@@ -271,7 +271,7 @@
               "label": "Effect",
               "type": "dropdown",
               "content": ["id_logo_mode", 0, 4],
-              "options": ["Wawe", "Mix", "Static", "Breath", "Off"]
+              "options": ["Wave", "Mix", "Static", "Breath", "Off"]
             },
             {
               "label": "Brightness",
@@ -281,7 +281,7 @@
               "options": [0, 5]
             },
             {
-              "label": "Speed (higher is slower)",
+              "label": "Speed",
               "showIf": "{id_logo_mode} != 4 && {id_logo_mode} != 2",
               "type": "dropdown",
               "content": ["id_logo_light_speed", 0, 6],
@@ -376,6 +376,7 @@
               "label": "Deep Sleep Delay",
               "showIf": "{id_sleep_toggle} == 1",
               "type": "dropdown",
+              "content": ["id_deep_sleep_delay", 0, 12],
               "options": [
                 "1m",
                 "2m",
@@ -397,8 +398,7 @@
                 "18m",
                 "19m",
                 "20m"
-              ],
-              "content": ["id_deep_sleep_delay", 0, 12]
+              ]
             }
           ]
         }

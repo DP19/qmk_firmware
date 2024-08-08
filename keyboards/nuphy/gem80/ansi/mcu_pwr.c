@@ -30,7 +30,6 @@ static bool rgb_led_powered_off  = 0;
 static bool rgb_led_on           = 0;
 static bool tim6_enabled         = false;
 
-void rgb_matrix_update_pwm_buffers(void);
 void clear_report_buffer_and_queue(void);
 
 /** ================================================================
@@ -169,8 +168,9 @@ void enter_deep_sleep(void) {
  *       This is mostly Nuphy's unreleased logic with cleanup/refactoring by me.
  */
 void exit_deep_sleep(void) {
-    extern void matrix_init_custom(void);
-    matrix_init_custom();
+    // Matrix initialization
+    extern void matrix_init(void);
+    matrix_init();
 
     // Restore IO working status
     gpio_set_pin_input_high(DEV_MODE_PIN);
@@ -266,15 +266,11 @@ void pwr_rgb_led_off(void) {
 
 void pwr_rgb_led_on(void) {
     if (rgb_led_on) return;
-    // if (rgb_led_on) return;
     // LED power supply on
     gpio_set_pin_output(DC_BOOST_PIN);
     gpio_write_pin_high(DC_BOOST_PIN);
     gpio_set_pin_output(DRIVER_LED_CS_PIN);
     gpio_write_pin_low(DRIVER_LED_CS_PIN);
-    // clear matrix
-    rgb_matrix_set_color_all(0, 0, 0);
-    rgb_matrix_update_pwm_buffers();
     rgb_led_on = 1;
 }
 
@@ -288,7 +284,6 @@ void pwr_side_led_on(void) {
     if (side_led_on) return;
     gpio_set_pin_output(DRIVER_SIDE_CS_PIN);
     gpio_write_pin_low(DRIVER_SIDE_CS_PIN);
-    side_rgb_refresh();
     side_led_on = 1;
 }
 

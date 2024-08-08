@@ -61,8 +61,10 @@ enum custom_keycodes {
     D_SLP_SHOW,
 };
 
-#define MAC_PRT     G(S(KC_3))
-#define MAC_PRTA    G(S(KC_4))
-#define WIN_PRTA    G(S(KC_S))
-#define MAC_SEARCH  G(KC_SPC)
-#define MAC_LOCK    G(C(KC_Q))
+#define MAC_PRT      G(S(KC_3))
+#define MAC_PRTA     G(S(KC_4))
+#define WIN_PRTA     G(S(KC_S))
+#define MAC_SEARCH   G(KC_SPC)
+#define MAC_LOCK     G(C(KC_Q))
+#define MAC_TSWH     C(KC_TAB)
+#define MAC_WSWH     G(KC_GRV)

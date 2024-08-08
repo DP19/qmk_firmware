@@ -1,6 +1,7 @@
 #include <stdint.h>
-#include "ansi.h"
 #include "host.h"
+#include "ws2812.h"
+#include "mcu_pwr.h"
 #include "rgb_matrix.h"
 #include "timer.h"
 #include "user_kb.h"
@@ -27,8 +28,7 @@ const uint8_t side_led_index_tab[SIDE_LINE] = {
 
 bool f_charging = 1;
 
-uint8_t side_play_point = 0;
-
+uint8_t side_play_point   = 0;
 uint8_t low_bat_blink_cnt = 6;
 uint8_t side_play_cnt     = 0;
 
@@ -52,6 +52,15 @@ void rgb_matrix_update_pwm_buffers(void);
 void logo_led_loop(void);
 void set_logo_rgb(uint8_t r, uint8_t g, uint8_t b);
 
+bool is_side_rgb_off(void) {
+    for (int i = 0; i < SIDE_LED_NUM; i++) {
+        if ((side_leds[i].r != 0) || (side_leds[i].g != 0) || (side_leds[i].b != 0)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 /**
  * @brief  side leds set color vaule.
  * @param  index: index of side_leds[].
@@ -68,6 +77,10 @@ void side_rgb_set_color(int index, uint8_t red, uint8_t green, uint8_t blue) {
 
  */
 void side_rgb_refresh(void) {
+    if (!is_side_rgb_off()) {
+        side_led_last_act = 0;
+        pwr_side_led_on(); // power on side LED before refresh
+    }
     side_ws2812_setleds(side_leds, SIDE_LED_NUM);
 }
 
@@ -228,7 +241,7 @@ void sleep_sw_led_show(void) {
         } else {
             set_side_rgb(0x00, 0x00, 0x00);
         }
-        if (timer_elapsed32(sleep_show_timer) >= (3000 - 50)) {
+        if (timer_elapsed32(sleep_show_timer) >= 3000) {
             sleep_show_flag = false;
         }
     }
@@ -421,9 +434,7 @@ static void side_static_mode_show(void) {
 /**
  * @brief  side_off_mode_show.
  */
-static void side_off_mode_show(void)
-
-{
+static void side_off_mode_show(void) {
     if (side_play_cnt <= side_speed_table[user_config.side_mode][user_config.side_speed])
         return;
     else
@@ -432,7 +443,6 @@ static void side_off_mode_show(void)
 
     r_temp = 0x00;
     g_temp = 0x00;
-
     b_temp = 0x00;
 
     for (int i = 0; i < SIDE_LINE; i++) {
@@ -463,7 +473,7 @@ void bat_charging_design(uint8_t init, uint8_t r, uint8_t g, uint8_t b) {
     uint16_t        bit_mask       = 1;
     uint8_t         i;
 
-    if (timer_elapsed32(interval_timer) > 100) {
+    if (timer_elapsed32(interval_timer) > 50) {
         interval_timer = timer_read32();
 
         if (f_move_trend) {
@@ -641,7 +651,7 @@ void bat_num_led(uint8_t bat_percent) {
     }
 
     for (uint8_t i = 1; i <= bat_pct_ones; i++) {
-        user_set_rgb_color(16 + i, r, g, b);
+        user_set_rgb_color(33 - i, r, g, b);
     }
 }
 
@@ -660,10 +670,10 @@ void bat_percent_led(uint8_t bat_percent) {
     uint8_t bat_r, bat_g, bat_b;
 
     if (bat_percent <= 20) { // 0-20
-        bat_end_led = 0;
+        bat_end_led = 1;
         bat_r = 0xff, bat_g = 0x00, bat_b = 0x00;
     } else if (bat_percent <= 50) {
-        bat_end_led = 1;
+        bat_end_led = 2;
         bat_r = 0xff, bat_g = 0x40, bat_b = 0x00;
     } else if (bat_percent <= 80) {
         bat_end_led = 3;
@@ -901,7 +911,7 @@ void side_led_show(void) {
 
     logo_led_loop();
 
-    if (timer_elapsed32(side_refresh_time) > 50) {
+    if (timer_elapsed32(side_refresh_time) > 50 && !f_goto_sleep) {
         side_refresh_time = timer_read32();
         side_rgb_refresh();
     }

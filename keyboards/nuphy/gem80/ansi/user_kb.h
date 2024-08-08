@@ -107,7 +107,7 @@ typedef enum {
 #define RF_DFU_PRESS_DELAY    30
 #define RGB_TEST_PRESS_DELAY  30
 
-#define DEBOUNCE_MAX 25
+#define DEBOUNCE_MAX 15
 #define SLEEP_MAX 20
 
 typedef struct {
@@ -157,6 +157,7 @@ extern bool          f_wakeup_prepare;
 extern uint8_t       rf_blink_cnt; // connection blink count
 extern bool          f_goto_sleep;
 extern bool          f_dial_sw_init_ok;
+extern uint16_t      side_led_last_act;
 
 void    dev_sts_sync(void);
 void    rf_uart_init(void);

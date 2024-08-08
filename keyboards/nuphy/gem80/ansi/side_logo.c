@@ -81,8 +81,9 @@ void logo_side_mode_control(void) {
 }
 
 void set_logo_rgb(uint8_t r, uint8_t g, uint8_t b) {
-    for (int i = 5; i < 12; i++)
-        side_rgb_set_color(i, r >> 2, g >> 2, b >> 2);
+    for (int i = 0; i < LOGO_LINE; i++) {
+        side_rgb_set_color(logo_led_index_tab[i], r >> 2, g >> 2, b >> 2);
+    }
 }
 
 static void logo_light_point_playing(uint8_t trend, uint8_t step, uint8_t len, uint8_t *point) {

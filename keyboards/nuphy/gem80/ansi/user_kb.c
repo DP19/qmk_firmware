@@ -482,7 +482,7 @@ void stat_show_rgb(uint8_t stat) {
     }
 
     for (uint8_t i = 1; i <= ones; i++) {
-        user_set_rgb_color(17 + i, 0xff, 0xff, 0xff);
+        user_set_rgb_color(33 - i, 0xff, 0xff, 0xff);
     }
 }
 
