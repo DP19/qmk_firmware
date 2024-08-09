@@ -34,7 +34,7 @@ void side_rgb_refresh(void);
 
 static void signal_sleep(uint8_t r, uint8_t g, uint8_t b) {
     // Visual cue for sleep/wake on side LED.
-    pwr_rgb_led_on();
+    pwr_side_led_on();
     wait_ms(50); // give some time to ensure LED powers on.
     set_logo_rgb(r, g, b);
     side_rgb_refresh();
